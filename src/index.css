@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: #0f172a;
+    background: #f8fafc;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .hero-bg {
+    background: linear-gradient(135deg, #0c1929 0%, #0d2137 40%, #0f2a45 70%, #0c1929 100%);
+  }
+  .geo-shape {
+    position: absolute;
+    background: linear-gradient(135deg, rgba(8,114,159,0.18) 0%, rgba(8,114,159,0.04) 100%);
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+  }
+}
+
+/* Carousel transition */
+.slide-enter { opacity: 0; transform: translateX(40px); }
+.slide-enter-active { opacity: 1; transform: translateX(0); transition: all 0.4s ease; }
+.slide-exit { opacity: 1; transform: translateX(0); }
+.slide-exit-active { opacity: 0; transform: translateX(-40px); transition: all 0.4s ease; }
