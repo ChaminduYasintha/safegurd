@@ -23,18 +23,19 @@ export default function Hero({ onBookNow }) {
   }
 
   return (
-    <section
-      id="home"
-      className="relative min-h-[640px] lg:min-h-[720px] flex items-center overflow-hidden py-14 sm:py-18 lg:py-22"
-      style={{
-        backgroundImage: `linear-gradient(90deg, rgba(8, 26, 39, 0.94) 0%, rgba(8, 26, 39, 0.82) 42%, rgba(8, 26, 39, 0.32) 50%, rgba(8, 26, 39, 0.78) 72%, rgba(8, 26, 39, 0.94) 100%), linear-gradient(180deg, rgba(8, 26, 39, 0.45) 0%, transparent 22%, transparent 75%, rgba(8, 26, 39, 0.85) 100%), url(${heroBgImg})`,
-        backgroundPosition: '50% 20%',
-        backgroundSize: 'cover',
-        backgroundRepeat: 'no-repeat',
-      }}
-    >
-      <div className="relative z-10 max-w-7xl mx-auto px-5 lg:px-8 w-full">
-        <div className="grid lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+    <section id="home" className="py-4 sm:py-6 lg:py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        <div
+          className="relative rounded-[2rem] lg:rounded-[2.5rem] overflow-hidden shadow-2xl min-h-[620px] lg:min-h-[680px] flex items-center px-6 sm:px-10 lg:px-12 py-10 sm:py-14"
+          style={{
+            backgroundImage: `linear-gradient(90deg, rgba(8, 26, 39, 0.94) 0%, rgba(8, 26, 39, 0.82) 42%, rgba(8, 26, 39, 0.32) 50%, rgba(8, 26, 39, 0.78) 72%, rgba(8, 26, 39, 0.94) 100%), linear-gradient(180deg, rgba(8, 26, 39, 0.45) 0%, transparent 22%, transparent 75%, rgba(8, 26, 39, 0.85) 100%), url(${heroBgImg})`,
+            backgroundPosition: '50% 20%',
+            backgroundSize: 'cover',
+            backgroundRepeat: 'no-repeat',
+          }}
+        >
+          <div className="relative z-10 w-full">
+            <div className="grid lg:grid-cols-12 gap-8 lg:gap-10 items-center">
 
           {/* ── LEFT COLUMN: High-Converting Headline & Trust Highlights ── */}
           <div className="lg:col-span-7 text-white">
@@ -236,6 +237,8 @@ export default function Hero({ onBookNow }) {
             </div>
           </div>
 
+        </div>
+          </div>
         </div>
       </div>
     </section>

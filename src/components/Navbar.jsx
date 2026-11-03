@@ -88,11 +88,11 @@ export default function Navbar({ onBookNow }) {
       <header
         className={`transition-[background-color,padding,top] duration-300 z-50 ${
           scrolled
-            ? 'fixed top-3 sm:top-4 left-0 right-0 px-4 sm:px-6 bg-transparent border-0'
+            ? 'fixed top-3 sm:top-4 left-0 right-0 px-4 sm:px-6 lg:px-8 bg-transparent border-0'
             : 'sticky top-0 w-full bg-white border-b border-slate-100 shadow-xs px-0'
         }`}
       >
-        <div className={scrolled ? 'max-w-6xl mx-auto' : 'max-w-7xl mx-auto px-5 sm:px-8'}>
+        <div className={scrolled ? 'max-w-7xl mx-auto' : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'}>
           <div
             className={`transition-[box-shadow,border-radius,padding,background-color] duration-300 flex items-center justify-between border-0 ${
               scrolled
