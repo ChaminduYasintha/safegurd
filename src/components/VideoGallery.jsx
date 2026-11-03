@@ -1,8 +1,10 @@
 import { useState, useRef } from 'react'
-import { Play, ChevronLeft, ChevronRight, Sparkles, X, CheckCircle2 } from 'lucide-react'
+import { Play, ChevronLeft, ChevronRight, Sparkles, X } from 'lucide-react'
 import videoWindow from '../assets/video_window.jpg'
 import videoFloor from '../assets/video_floor.jpg'
 import videoWashroom from '../assets/video_washroom.jpg'
+import sofaImg from '../assets/service_sofa.jpg'
+import gardenImg from '../assets/service_garden.jpg'
 
 const videos = [
   {
@@ -12,6 +14,14 @@ const videos = [
     thumbnail: videoWindow,
     tag: 'Window Care',
     duration: '0:45',
+  },
+  {
+    id: 'sofa',
+    title: 'Sofa & Mattress Deep Extraction',
+    description: 'Watch our deep extraction shampooing eliminate deep dust mites, pet hair, and stubborn stains from upholstered furniture.',
+    thumbnail: sofaImg,
+    tag: 'Upholstery Care',
+    duration: '1:05',
   },
   {
     id: 'floor',
@@ -28,6 +38,14 @@ const videos = [
     thumbnail: videoWashroom,
     tag: 'Disinfection',
     duration: '0:50',
+  },
+  {
+    id: 'garden',
+    title: 'Garden & Pond Outdoor Cleaning',
+    description: 'See our team clear debris, scrub pond surroundings, and pressure-wash outdoor tiles and patio areas.',
+    thumbnail: gardenImg,
+    tag: 'Outdoor Care',
+    duration: '0:58',
   },
 ]
 
@@ -79,25 +97,25 @@ export default function VideoGallery({ onBookNow }) {
           </div>
         </div>
 
-        {/* Video Cards Grid / Carousel */}
+        {/* Video Cards Carousel Track */}
         <div
           ref={scrollRef}
-          className="grid sm:grid-cols-2 lg:grid-cols-3 gap-7 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-none"
+          className="flex gap-7 overflow-x-auto pb-6 snap-x snap-mandatory scrollbar-none scroll-smooth"
         >
           {videos.map((vid) => (
             <div
               key={vid.id}
               onClick={() => setActiveVideo(vid)}
-              className="group cursor-pointer relative bg-slate-900 rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 snap-start flex flex-col"
+              className="w-[85vw] sm:w-[calc(50%-14px)] lg:w-[calc(33.333%-19px)] flex-shrink-0 group cursor-pointer relative bg-slate-900 rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 snap-start flex flex-col"
             >
               {/* Thumbnail Container */}
-              <div className="relative h-64 overflow-hidden">
+              <div className="relative h-60 sm:h-64 overflow-hidden bg-slate-950">
                 <img
                   src={vid.thumbnail}
                   alt={vid.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-80 group-hover:opacity-90"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/25 to-transparent" />
 
                 {/* Play Button */}
                 <div className="absolute inset-0 flex items-center justify-center">
@@ -106,7 +124,7 @@ export default function VideoGallery({ onBookNow }) {
                   </div>
                 </div>
 
-                {/* Badge & Duration */}
+                {/* Tag & Duration Badges */}
                 <div className="absolute top-4 left-4">
                   <span className="px-3 py-1 bg-black/60 backdrop-blur-md text-white text-xs font-bold rounded-full">
                     {vid.tag}
@@ -179,7 +197,7 @@ export default function VideoGallery({ onBookNow }) {
                 }}
                 className="px-6 py-2.5 bg-sky-600 hover:bg-sky-500 text-white text-sm font-bold rounded-xl transition-all cursor-pointer"
               >
-                Book This Service Now
+                Get a Quote for This Service
               </button>
             </div>
           </div>
@@ -188,4 +206,3 @@ export default function VideoGallery({ onBookNow }) {
     </section>
   )
 }
-

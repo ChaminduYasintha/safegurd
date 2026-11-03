@@ -16,7 +16,7 @@ export default function Navbar({ onBookNow }) {
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 20)
+      setScrolled(window.scrollY > 40)
     }
     handleScroll()
     window.addEventListener('scroll', handleScroll, { passive: true })
@@ -24,41 +24,38 @@ export default function Navbar({ onBookNow }) {
   }, [])
 
   return (
-    <div className="sticky top-0 z-50">
-      {/* ── Top Blue Contact Bar (#08729f) ── */}
-      <div className="bg-[#08729f] text-white text-xs py-2 px-4 sm:px-6 transition-all duration-300">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-          {/* Contact Details */}
-          <div className="flex items-center gap-4 sm:gap-7 flex-wrap">
+    <>
+      {/* ── Top Blue Contact Bar ── */}
+      <div className="bg-[#08729f] text-white text-xs py-2 px-4 sm:px-8 border-b border-white/10 relative z-30">
+        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-5 sm:gap-6 flex-wrap">
             <a
               href="tel:+94704906565"
-              className="inline-flex items-center gap-1.5 text-white hover:text-sky-200 transition-colors font-medium"
+              className="inline-flex items-center gap-1.5 hover:text-sky-200 transition-colors font-semibold"
             >
               <Phone className="w-3.5 h-3.5 text-white/90" />
               <span>+94 70 490 5655</span>
             </a>
-
-            <span className="hidden sm:inline-flex items-center gap-1.5 text-white/90">
+            <span className="hidden md:inline-flex items-center gap-1.5 text-white/90">
               <MapPin className="w-3.5 h-3.5 text-white/90" />
               <span>14/1/A, Kandy Road, Kadawatha</span>
             </span>
-
             <a
               href="mailto:sameerasellapperuma@gmail.com"
-              className="hidden md:inline-flex items-center gap-1.5 text-white/90 hover:text-sky-200 transition-colors"
+              className="hidden lg:inline-flex items-center gap-1.5 hover:text-sky-200 transition-colors text-white/90"
             >
               <Mail className="w-3.5 h-3.5 text-white/90" />
               <span>sameerasellapperuma@gmail.com</span>
             </a>
           </div>
 
-          {/* Social Links */}
+          {/* Social Icons */}
           <div className="flex items-center gap-2">
             <a
               href="https://www.facebook.com/profile.php?id=100084914851233"
               target="_blank"
               rel="noopener noreferrer"
-              className="w-6 h-6 rounded-full border border-white/60 flex items-center justify-center text-white hover:bg-white hover:text-[#08729f] transition-all text-xs font-bold"
+              className="w-6 h-6 rounded-full border border-white/50 flex items-center justify-center hover:bg-white hover:text-[#08729f] transition-all text-[11px] font-bold"
               aria-label="Safeguard Facebook Page"
             >
               f
@@ -67,7 +64,7 @@ export default function Navbar({ onBookNow }) {
               href="https://wa.me/94704906565"
               target="_blank"
               rel="noopener noreferrer"
-              className="w-6 h-6 rounded-full border border-white/60 flex items-center justify-center text-white hover:bg-white hover:text-[#08729f] transition-all"
+              className="w-6 h-6 rounded-full border border-white/50 flex items-center justify-center hover:bg-white hover:text-[#08729f] transition-all text-[11px]"
               aria-label="Safeguard WhatsApp"
             >
               <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current">
@@ -78,101 +75,115 @@ export default function Navbar({ onBookNow }) {
               href="https://www.instagram.com/"
               target="_blank"
               rel="noopener noreferrer"
-              className="w-6 h-6 rounded-full border border-white/60 flex items-center justify-center text-white hover:bg-white hover:text-[#08729f] transition-all text-xs"
+              className="w-6 h-6 rounded-full border border-white/50 flex items-center justify-center hover:bg-white hover:text-[#08729f] transition-all text-[11px]"
               aria-label="Safeguard Instagram"
             >
-              <span className="font-semibold text-[10px]">ig</span>
+              ◎
             </a>
           </div>
         </div>
       </div>
 
-      {/* ── Main Navigation Bar (Clean White Pill Style) ── */}
-      <nav
-        className={`bg-white transition-all duration-300 border-b ${
-          scrolled ? 'shadow-md border-slate-200' : 'border-slate-100'
+      {/* ── Main Navigation Bar (Clean borderless transition) ── */}
+      <header
+        className={`transition-[background-color,padding,top] duration-300 z-50 ${
+          scrolled
+            ? 'fixed top-3 sm:top-4 left-0 right-0 px-4 sm:px-6 bg-transparent border-0'
+            : 'sticky top-0 w-full bg-white border-b border-slate-100 shadow-xs px-0'
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between">
-          {/* Logo */}
-          <a href="#home" className="flex items-center group py-0.5" aria-label="Safeguard Cleaning Services">
-            <img
-              src={logoImg}
-              alt="Safeguard Cleaning Services"
-              className="h-9 sm:h-11 md:h-12 w-auto max-w-[170px] sm:max-w-[210px] object-contain group-hover:opacity-90 transition-opacity"
-            />
-          </a>
-
-          {/* Desktop Navigation Links */}
-          <div className="hidden lg:flex items-center gap-7 xl:gap-9">
-            {navLinks.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                className="text-sm font-bold text-slate-700 hover:text-[#08729f] transition-colors relative py-1 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[#08729f] after:scale-x-0 hover:after:scale-x-100 after:transition-transform"
-              >
-                {link.label}
-              </a>
-            ))}
-          </div>
-
-          {/* Book Now Button */}
-          <div className="hidden sm:flex items-center gap-3">
-            <button
-              onClick={onBookNow}
-              className="px-6 sm:px-7 py-2.5 bg-sky-600 hover:bg-sky-500 text-white text-sm font-extrabold rounded-full shadow-md shadow-sky-600/30 hover:shadow-lg hover:shadow-sky-600/40 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
+        <div className={scrolled ? 'max-w-6xl mx-auto' : 'max-w-7xl mx-auto px-5 sm:px-8'}>
+          <div
+            className={`transition-[box-shadow,border-radius,padding,background-color] duration-300 flex items-center justify-between border-0 ${
+              scrolled
+                ? 'rounded-full bg-white shadow-2xl shadow-slate-900/15 px-6 sm:px-10 py-3 sm:py-3.5'
+                : 'rounded-none bg-transparent shadow-none px-0 py-3.5 sm:py-4'
+            }`}
+          >
+            {/* Logo */}
+            <a
+              href="#home"
+              className="flex items-center group py-0.5"
+              aria-label="Safeguard Cleaning Services"
             >
-              Book Now
-            </button>
-          </div>
+              <img
+                src={logoImg}
+                alt="Safeguard Cleaning Services"
+                className="h-9 sm:h-11 md:h-12 w-auto max-w-[165px] sm:max-w-[210px] md:max-w-[240px] object-contain group-hover:opacity-90 transition-opacity"
+              />
+            </a>
 
-          {/* Mobile Menu Toggle */}
-          <div className="flex items-center gap-2 sm:hidden">
-            <button
-              onClick={onBookNow}
-              className="px-3.5 py-1.5 bg-sky-600 text-white text-xs font-bold rounded-full cursor-pointer"
-            >
-              Book
-            </button>
-            <button
-              onClick={() => setMenuOpen(!menuOpen)}
-              className="p-1.5 text-slate-700 hover:text-[#08729f] focus:outline-none cursor-pointer"
-              aria-label="Toggle menu"
-            >
-              {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile Dropdown Menu */}
-        {menuOpen && (
-          <div className="lg:hidden px-4 pb-4 pt-1 bg-white border-t border-slate-100 animate-in fade-in duration-200">
-            <div className="flex flex-col space-y-1">
+            {/* Desktop Navigation Links */}
+            <nav className="hidden lg:flex items-center gap-7 sm:gap-9">
               {navLinks.map((link) => (
                 <a
                   key={link.href}
                   href={link.href}
-                  onClick={() => setMenuOpen(false)}
-                  className="px-4 py-2.5 text-sm font-bold text-slate-700 hover:text-[#08729f] hover:bg-sky-50 rounded-xl transition-colors"
+                  className="text-sm sm:text-base font-bold text-slate-800 hover:text-sky-600 transition-colors relative py-1 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-sky-600 after:scale-x-0 hover:after:scale-x-100 after:transition-transform"
                 >
                   {link.label}
                 </a>
               ))}
-              <div className="pt-2">
-                <button
-                  onClick={() => {
-                    setMenuOpen(false)
-                    onBookNow()
-                  }}
-                  className="w-full py-3 bg-sky-600 hover:bg-sky-500 text-white font-bold text-sm rounded-xl shadow-md transition-all text-center cursor-pointer"
-                >
-                  Book Now / Get a Quote
-                </button>
-              </div>
+            </nav>
+
+            {/* Desktop CTA Button: Get a Quote */}
+            <div className="hidden sm:flex items-center">
+              <button
+                onClick={onBookNow}
+                className="px-7 sm:px-8 py-2.5 sm:py-3 bg-sky-600 hover:bg-sky-500 text-white text-sm sm:text-base font-extrabold rounded-full shadow-md shadow-sky-600/30 hover:shadow-lg hover:shadow-sky-600/40 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 cursor-pointer border-0"
+              >
+                Get a Quote
+              </button>
+            </div>
+
+            {/* Mobile Buttons */}
+            <div className="flex items-center gap-2 sm:hidden">
+              <button
+                onClick={onBookNow}
+                className="px-3.5 py-1.5 bg-sky-600 text-white text-xs font-bold rounded-full cursor-pointer shadow-sm border-0"
+              >
+                Get Quote
+              </button>
+              <button
+                onClick={() => setMenuOpen(!menuOpen)}
+                className="p-1.5 text-slate-800 hover:text-sky-600 focus:outline-none cursor-pointer"
+                aria-label="Toggle menu"
+              >
+                {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </button>
             </div>
           </div>
-        )}
-      </nav>
-    </div>
+
+          {/* Mobile Menu Dropdown */}
+          {menuOpen && (
+            <div className="lg:hidden mt-2 p-4 bg-white/98 backdrop-blur-md rounded-2xl shadow-2xl border border-slate-100 animate-in fade-in slide-in-from-top-2 duration-200">
+              <nav className="flex flex-col space-y-1">
+                {navLinks.map((link) => (
+                  <a
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setMenuOpen(false)}
+                    className="px-4 py-2.5 text-sm font-semibold text-slate-800 hover:text-sky-600 hover:bg-sky-50 rounded-xl transition-colors"
+                  >
+                    {link.label}
+                  </a>
+                ))}
+                <div className="pt-2">
+                  <button
+                    onClick={() => {
+                      setMenuOpen(false)
+                      onBookNow()
+                    }}
+                    className="w-full py-3 bg-sky-600 hover:bg-sky-500 text-white font-bold text-sm rounded-xl shadow-md transition-all text-center cursor-pointer border-0"
+                  >
+                    Get a Quote
+                  </button>
+                </div>
+              </nav>
+            </div>
+          )}
+        </div>
+      </header>
+    </>
   )
 }
