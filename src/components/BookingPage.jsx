@@ -10,7 +10,6 @@ import {
   Sparkles,
   ChevronRight,
   ChevronLeft,
-  ShieldCheck,
   ArrowLeft,
   Phone,
   CheckCircle2,
@@ -98,7 +97,7 @@ export default function BookingPage({ onBackToHome, initialService = null, initi
     email: '',
     address: '',
     city: 'Kadawatha / Colombo',
-    notes: '',
+    notes: initialParams?.notes || initialParams?.message || '',
   })
 
   // Scroll to top on mount
@@ -231,6 +230,12 @@ export default function BookingPage({ onBackToHome, initialService = null, initi
                 <span className="text-slate-500">Address:</span>
                 <span className="font-bold text-slate-900 text-right max-w-xs">{booking.address}, {booking.city}</span>
               </div>
+              {booking.notes && booking.notes.trim() && (
+                <div className="flex justify-between pb-2 border-b border-slate-200/80">
+                  <span className="text-slate-500">Customer Notes:</span>
+                  <span className="font-bold text-slate-900 text-right max-w-xs break-words">{booking.notes}</span>
+                </div>
+              )}
               <div className="flex justify-between pt-1">
                 <span className="text-slate-500">Pricing Terms:</span>
                 <span className="font-extrabold text-emerald-700">Custom Quotation &bull; Fair Guaranteed Rates</span>
@@ -636,15 +641,17 @@ export default function BookingPage({ onBackToHome, initialService = null, initi
                     </div>
 
                     <div>
-                      <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">
-                        Special Instructions or Requests
+                      <label htmlFor="booking-notes" className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">
+                        Special Instructions or Customer Notes (Optional)
                       </label>
                       <textarea
+                        id="booking-notes"
+                        name="notes"
                         rows={3}
                         value={booking.notes}
                         onChange={(e) => set('notes', e.target.value)}
-                        placeholder="Specific stains, high ceiling windows, balcony tiles, water connection availability..."
-                        className="w-full px-4 py-3 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                        placeholder="Specific stains, high ceiling windows, balcony tiles, water connection availability, gate access..."
+                        className="w-full px-4 py-3 rounded-xl border border-slate-300 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white"
                       />
                     </div>
                   </div>
@@ -711,27 +718,16 @@ export default function BookingPage({ onBackToHome, initialService = null, initi
                         </div>
                       </div>
 
-                      {booking.notes && (
-                        <div className="pt-3 border-t border-slate-200 text-xs">
-                          <span className="text-slate-400 block font-medium mb-1">Customer Notes</span>
-                          <p className="text-slate-700 italic bg-white p-3 rounded-xl border border-slate-200">
-                            &ldquo;{booking.notes}&rdquo;
-                          </p>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-200 flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-2.5">
-                        <ShieldCheck className="w-5 h-5 text-emerald-600" />
-                        <div>
-                          <span className="font-extrabold text-emerald-950 block">No Advance Fee Required</span>
-                          <span className="text-emerald-700">Free on-site assessment before any work starts</span>
+                      <div className="pt-3 border-t border-slate-200 text-xs">
+                        <span className="text-slate-400 block font-medium mb-1">Customer Notes</span>
+                        <div className="text-slate-800 bg-white p-3.5 rounded-xl border border-slate-200 text-sm leading-relaxed whitespace-pre-wrap break-words">
+                          {booking.notes && booking.notes.trim() ? (
+                            <span>{booking.notes}</span>
+                          ) : (
+                            <span className="text-slate-400 italic">No special instructions provided</span>
+                          )}
                         </div>
                       </div>
-                      <span className="font-extrabold text-xs text-emerald-800 bg-white px-3 py-1.5 rounded-xl border border-emerald-200">
-                        Zero Risk
-                      </span>
                     </div>
                   </div>
                 )}
@@ -838,6 +834,15 @@ export default function BookingPage({ onBackToHome, initialService = null, initi
                       <span className="text-slate-500">Frequency:</span>
                       <span className="font-bold text-sky-700">{booking.frequency?.label}</span>
                     </div>
+
+                    {booking.notes && booking.notes.trim() && (
+                      <div className="pt-2 border-t border-slate-100">
+                        <span className="text-slate-500 block mb-1">Customer Notes:</span>
+                        <p className="text-slate-800 bg-slate-50 p-2.5 rounded-xl border border-slate-200/80 text-[11px] leading-relaxed break-words line-clamp-3">
+                          {booking.notes}
+                        </p>
+                      </div>
+                    )}
                   </div>
 
                   {/* Guaranteed Trust Checklist */}
