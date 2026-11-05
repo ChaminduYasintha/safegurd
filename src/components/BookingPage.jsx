@@ -226,20 +226,16 @@ export default function BookingPage({ onBackToHome, initialService = null, initi
                   {booking.date || 'Flexible'} &bull; {booking.time}
                 </span>
               </div>
-              <div className="flex justify-between pb-2 border-b border-slate-200/80">
+              <div className={`flex justify-between ${booking.notes && booking.notes.trim() ? 'pb-2 border-b border-slate-200/80' : ''}`}>
                 <span className="text-slate-500">Address:</span>
                 <span className="font-bold text-slate-900 text-right max-w-xs">{booking.address}, {booking.city}</span>
               </div>
               {booking.notes && booking.notes.trim() && (
-                <div className="flex justify-between pb-2 border-b border-slate-200/80">
+                <div className="flex justify-between pt-1">
                   <span className="text-slate-500">Customer Notes:</span>
                   <span className="font-bold text-slate-900 text-right max-w-xs break-words">{booking.notes}</span>
                 </div>
               )}
-              <div className="flex justify-between pt-1">
-                <span className="text-slate-500">Pricing Terms:</span>
-                <span className="font-extrabold text-emerald-700">Custom Quotation &bull; Fair Guaranteed Rates</span>
-              </div>
             </div>
 
             {/* Actions */}
