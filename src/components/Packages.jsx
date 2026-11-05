@@ -12,7 +12,8 @@ const packages = [
       'Eco-friendly child & pet safe products',
       'Flexible weekly or bi-weekly schedules',
     ],
-    priceText: 'Custom quotation',
+    price: 'Rs. 15,000',
+    period: '/ service',
     popular: false,
     badgeColor: 'text-emerald-700 bg-emerald-50 border-emerald-200',
   },
@@ -27,7 +28,8 @@ const packages = [
       'After-hours & weekend availability',
       'Dedicated facility supervisor',
     ],
-    priceText: 'Custom quotation',
+    price: 'Rs. 25,000',
+    period: '/ month',
     popular: true,
     badgeColor: 'text-sky-700 bg-sky-50 border-sky-200',
   },
@@ -42,7 +44,8 @@ const packages = [
       'High-grade sanitized standards',
       'Full post-service verification checklist',
     ],
-    priceText: 'Custom quotation',
+    price: 'Rs. 40,000',
+    period: '/ project',
     popular: false,
     badgeColor: 'text-indigo-700 bg-indigo-50 border-indigo-200',
   },
@@ -62,7 +65,7 @@ export default function Packages({ onBookNow }) {
             Cleaning Packages
           </h2>
           <p className="text-slate-600 text-base sm:text-lg leading-relaxed">
-            Choose a service level and request a quotation. Final scope and pricing are confirmed after reviewing your requirements.
+            Choose a service package tailored for your space. Transparent rates with flexible schedules and professional equipment.
           </p>
         </div>
 
@@ -114,11 +117,13 @@ export default function Packages({ onBookNow }) {
 
               <div>
                 <div className="pt-6 border-t border-slate-100 mb-6">
-                  <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
-                    Pricing Scheme
-                  </div>
-                  <div className="text-2xl font-extrabold text-slate-900">
-                    {pkg.priceText}
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-3xl font-extrabold text-slate-900 tracking-tight">
+                      {pkg.price}
+                    </span>
+                    <span className="text-xs font-semibold text-slate-500">
+                      {pkg.period}
+                    </span>
                   </div>
                 </div>
 
@@ -142,4 +147,3 @@ export default function Packages({ onBookNow }) {
     </section>
   )
 }
-

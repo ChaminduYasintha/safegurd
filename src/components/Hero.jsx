@@ -1,14 +1,14 @@
 import { useState } from 'react'
-import { CheckCircle2, Shield, Star, Clock, Users, ArrowRight, Phone } from 'lucide-react'
+import { ArrowRight, Phone } from 'lucide-react'
 import heroBgImg from '../assets/hero_bg.jpg'
 
 const serviceOptions = [
-  { id: 'residential', name: 'Residential Care', defaultRooms: 3, defaultBaths: 2, duration: '2 - 3 Hours', crew: '2 Cleaners' },
-  { id: 'facility', name: 'Facility & Deep Cleaning', defaultRooms: 4, defaultBaths: 3, duration: '4 - 6 Hours', crew: '3 - 4 Cleaners' },
-  { id: 'commercial', name: 'Commercial Care', defaultRooms: 5, defaultBaths: 2, duration: '3 - 5 Hours', crew: '3 Cleaners' },
-  { id: 'glass', name: 'Glass & Window Cleaning', defaultRooms: 2, defaultBaths: 1, duration: '1 - 2 Hours', crew: '2 Cleaners' },
-  { id: 'sofa', name: 'Sofa & Mattress Care', defaultRooms: 2, defaultBaths: 1, duration: '2 Hours', crew: '2 Cleaners' },
-  { id: 'floor', name: 'Floor Scrubbing & Polishing', defaultRooms: 3, defaultBaths: 2, duration: '2 - 4 Hours', crew: '2 - 3 Cleaners' },
+  { id: 'residential', name: 'Residential Care', defaultRooms: 3, defaultBaths: 2 },
+  { id: 'facility', name: 'Facility & Deep Cleaning', defaultRooms: 4, defaultBaths: 3 },
+  { id: 'commercial', name: 'Commercial Care', defaultRooms: 5, defaultBaths: 2 },
+  { id: 'glass', name: 'Glass & Window Cleaning', defaultRooms: 2, defaultBaths: 1 },
+  { id: 'sofa', name: 'Sofa & Mattress Care', defaultRooms: 2, defaultBaths: 1 },
+  { id: 'floor', name: 'Floor Scrubbing & Polishing', defaultRooms: 3, defaultBaths: 2 },
 ]
 
 export default function Hero({ onBookNow }) {
@@ -91,35 +91,13 @@ export default function Hero({ onBookNow }) {
                 <span>Hospital, Hotel &amp; Restaurant</span>
               </div>
             </div>
-
-            {/* Happiness Guaranteed & Rating Badges */}
-            <div className="flex flex-wrap items-center gap-4 mt-6">
-              <div className="flex items-center gap-2.5 px-3.5 py-1.5 rounded-xl bg-slate-900/70 border border-slate-700/60 backdrop-blur-md text-xs">
-                <Shield className="w-4 h-4 text-emerald-400" />
-                <span className="font-semibold text-slate-200">Happiness Guaranteed</span>
-              </div>
-              <div className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-900/70 border border-slate-700/60 backdrop-blur-md text-xs">
-                <div className="flex text-amber-400">{'★'.repeat(5)}</div>
-                <span className="font-bold text-slate-200">5.0 Star Rating</span>
-              </div>
-            </div>
           </div>
 
-          {/* ── RIGHT COLUMN: Quick Booking Estimator Calculator Card ── */}
+          {/* ── RIGHT COLUMN: Book Your Service Card ── */}
           <div className="lg:col-span-5">
             <div className="bg-white rounded-[2rem] p-6 sm:p-7 shadow-2xl border border-slate-100 text-slate-900 relative">
-              {/* Header Tags & Title */}
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-[10px] font-extrabold uppercase tracking-widest text-sky-600 bg-sky-50 px-3 py-1 rounded-full border border-sky-100">
-                  Quick Booking Estimator
-                </span>
-                <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">
-                  Free Quote
-                </span>
-              </div>
-
               <h3 className="text-2xl font-extrabold text-slate-900 mb-5">
-                Calculate Service Scope
+                Book Your Service
               </h3>
 
               {/* Service Selection Buttons (2 columns) */}
@@ -146,7 +124,7 @@ export default function Hero({ onBookNow }) {
               </div>
 
               {/* Counter Buttons: Rooms/Units & Washrooms */}
-              <div className="grid grid-cols-2 gap-3 mb-5">
+              <div className="grid grid-cols-2 gap-3 mb-6">
                 <div className="p-3 bg-slate-50/80 rounded-2xl border border-slate-200">
                   <div className="text-xs font-bold text-slate-600 mb-2">Rooms / Units</div>
                   <div className="flex items-center justify-between">
@@ -190,49 +168,15 @@ export default function Hero({ onBookNow }) {
                 </div>
               </div>
 
-              {/* Estimate Duration & Crew Box */}
-              <div className="p-3.5 bg-gradient-to-r from-sky-50 to-emerald-50 rounded-2xl border border-sky-100 mb-5">
-                <div className="flex items-center justify-between text-xs text-slate-700 mb-1.5">
-                  <span className="flex items-center gap-1.5 font-medium">
-                    <Clock className="w-3.5 h-3.5 text-sky-600" />
-                    Est. Duration:
-                  </span>
-                  <span className="font-extrabold text-slate-900">{selectedService.duration}</span>
-                </div>
-                <div className="flex items-center justify-between text-xs text-slate-700">
-                  <span className="flex items-center gap-1.5 font-medium">
-                    <Users className="w-3.5 h-3.5 text-emerald-600" />
-                    Crew Assigned:
-                  </span>
-                  <span className="font-extrabold text-slate-900">{selectedService.crew}</span>
-                </div>
-                <div className="mt-2.5 pt-2 border-t border-sky-100 flex items-center justify-between text-xs">
-                  <span className="text-slate-500 font-medium">Pricing Scheme:</span>
-                  <span className="text-xs font-extrabold text-sky-800 uppercase tracking-wide">
-                    CUSTOM QUOTE &bull; FAIR RATES
-                  </span>
-                </div>
-              </div>
-
-              {/* Action Button: Renamed to "Get a Quote Now" */}
+              {/* Action Button: Get a Quote */}
               <button
                 type="button"
                 onClick={() => onBookNow(selectedService.name, { rooms, baths })}
                 className="w-full py-4 px-4 bg-sky-600 hover:bg-sky-500 text-white font-extrabold rounded-2xl shadow-lg shadow-sky-600/30 hover:shadow-sky-500/50 transition-all flex items-center justify-center gap-2 cursor-pointer hover:-translate-y-0.5 active:translate-y-0"
               >
-                <span>Get a Quote Now</span>
+                <span>Get a Quote</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
-
-              {/* Trust Checkmarks */}
-              <div className="mt-3.5 flex items-center justify-center gap-4 text-xs text-slate-500">
-                <span className="flex items-center gap-1">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> No hidden fees
-                </span>
-                <span className="flex items-center gap-1">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> Supplies included
-                </span>
-              </div>
             </div>
           </div>
 

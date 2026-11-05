@@ -880,17 +880,6 @@ export default function BookingPage({ onBackToHome, initialService = null, initi
                     </a>
                   </div>
                 </div>
-
-                {/* Rating Card */}
-                <div className="bg-white rounded-2xl p-4 border border-slate-200/80 flex items-center gap-3 shadow-xs">
-                  <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center font-extrabold text-sm">
-                    ★
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-slate-900">5.0 Star Rated Cleaners</div>
-                    <div className="text-[11px] text-slate-400">Trusted across Colombo &amp; Gampaha</div>
-                  </div>
-                </div>
               </div>
             </div>
           </div>

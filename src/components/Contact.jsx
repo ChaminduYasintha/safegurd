@@ -113,9 +113,6 @@ export default function Contact() {
                     >
                       +94 70 490 5655
                     </a>
-                    <div className="text-xs text-slate-500 font-medium">
-                      Fast response for photos &amp; estimates
-                    </div>
                   </div>
                 </div>
 
