@@ -44,13 +44,38 @@ const SUB_SERVICES = {
   residential: [
     { id: 'customized', label: 'Customized Cleaning Package',        westernOnly: true  },
     { id: 'longterm',   label: 'Long Term Cleaning Agreement',       westernOnly: true  },
-    { id: 'premium',    label: 'Pro Session / Premium Deep Cleaning', westernOnly: false },
+    { id: 'premium',    label: 'Full House / Premises Deep Cleaning', westernOnly: false },
   ],
   corporate: [
     { id: 'customized',  label: 'Customized Cleaning Package',         westernOnly: true  },
     { id: 'longterm',    label: 'Long Term Cleaning Agreement',        westernOnly: true  },
     { id: 'fullservice', label: 'Full Service / Premium Deep Cleaning', westernOnly: false },
   ],
+}
+
+/* ─────────────────────────────────────────────
+   LONG-TERM PRICING TABLE
+───────────────────────────────────────────── */
+
+const LONGTERM_PRICING = {
+  Weekly: {
+    'Within 20 KM': { 'Once (1x)': 27950, 'Twice (2x)': 55900, 'Three Times (3x)': 83850 },
+    'Beyond 20 KM': { 'Once (1x)': 31500, 'Twice (2x)': 63500, 'Three Times (3x)': 94500 },
+  },
+  Monthly: {
+    'Within 20 KM': { 'Once (1x)': 10500, 'Twice (2x)': 19500 },
+    'Beyond 20 KM': { 'Once (1x)': 12500, 'Twice (2x)': 21500 },
+  },
+}
+
+const LONGTERM_TIMES = {
+  Weekly:  ['Once (1x)', 'Twice (2x)', 'Three Times (3x)'],
+  Monthly: ['Once (1x)', 'Twice (2x)'],
+}
+
+function getLongtermPrice(frequency, times, distance) {
+  if (!frequency || !times || !distance) return null
+  return LONGTERM_PRICING[frequency]?.[distance]?.[times] ?? null
 }
 
 /* ─────────────────────────────────────────────
@@ -77,41 +102,29 @@ const FORMS = {
   },
 
   'residential-longterm': {
-    title: 'Long Term Cleaning Agreement — Residential',
-    note: 'Apply workforce provision',
+    title: 'Long-Term Cleaning Agreement',
+    note: 'Only Western Province',
+    isLongTerm: true,
     fields: [
-      {
-        key: 'frequency',
-        label: 'Frequency',
-        type: 'select',
-        options: ['Weekly', 'Bi-daily'],
-      },
-      {
-        key: 'maximumHours',
-        label: 'Maximum Hours',
-        type: 'select',
-        options: ['Within 30-35h Daily', '40h Daily'],
-      },
-      {
-        key: 'pricing',
-        label: 'Pricing',
-        type: 'select',
-        options: ['Weekly Rate', 'Monthly Rate'],
-      },
-      { key: 'name',    label: 'Name',    type: 'text', placeholder: 'Full name' },
-      { key: 'address', label: 'Address', type: 'text', placeholder: 'No, Street, City' },
-      { key: 'contact', label: 'Contact', type: 'tel',  placeholder: '07X XXX XXXX' },
+      { key: 'frequency', label: 'Frequency',       type: 'radio', options: ['Weekly', 'Monthly'] },
+      { key: 'times',     label: 'How many times ?', type: 'radio-conditional', dependsOn: 'frequency', conditionalOptions: LONGTERM_TIMES },
+      { key: 'distance',  label: 'Distance',         type: 'radio', options: ['Within 20 KM', 'Beyond 20 KM'] },
+      { key: '_pricing',  label: 'PRICING',          type: 'pricing-display' },
+      { key: 'name',      label: 'Name',             type: 'text', placeholder: 'Full name' },
+      { key: 'address',   label: 'Address',          type: 'text', placeholder: 'No, Street, City' },
+      { key: 'contact',   label: 'Contact',          type: 'tel',  placeholder: '07X XXX XXXX' },
     ],
   },
 
   'residential-premium': {
-    title: 'Pro Session / Premium Deep Cleaning',
-    note: 'Requires a Disposition',
+    title: 'Full House / Premises Deep Cleaning',
+    note: 'Request a Inspection',
     fields: [
-      { key: 'name',    label: 'Name',    type: 'text', placeholder: 'Full name' },
-      { key: 'date',    label: 'Date',    type: 'date' },
-      { key: 'address', label: 'Address', type: 'text', placeholder: 'No, Street, City' },
-      { key: 'contact', label: 'Contact', type: 'tel',  placeholder: '07X XXX XXXX' },
+      { key: 'name',    label: 'Name',       type: 'text', placeholder: 'Full name' },
+      { key: 'date',    label: 'Date',       type: 'date' },
+      { key: 'time',    label: 'Time',       type: 'time' },
+      { key: 'address', label: 'Address',    type: 'text', placeholder: 'No, Street, City' },
+      { key: 'contact', label: 'Contact No', type: 'tel',  placeholder: '07X XXX XXXX' },
     ],
   },
 
@@ -184,6 +197,11 @@ function buildWhatsAppMessage(category, subService, district, formData, formDef)
   if (formDef.note) lines.push(`_${formDef.note}_`, ``)
 
   formDef.fields.forEach(field => {
+    if (field.type === 'pricing-display') {
+      const price = getLongtermPrice(formData.frequency, formData.times, formData.distance)
+      if (price !== null) lines.push(`*${field.label}:* LKR ${price.toLocaleString()}`)
+      return
+    }
     const val = formData[field.key]
     if (field.type === 'counter') {
       lines.push(`*${field.label}:* ${val || 1}`)
@@ -240,7 +258,10 @@ export default function Hero() {
   }
 
   const handleField = (key, value) =>
-    setFormData(prev => ({ ...prev, [key]: value }))
+    setFormData(prev => {
+      if (key === 'frequency') return { ...prev, [key]: value, times: '' }
+      return { ...prev, [key]: value }
+    })
 
   const handleCheck = (key, option, checked) => {
     setFormData(prev => {
@@ -496,15 +517,98 @@ export default function Hero() {
                           />
                         )}
 
-                        {field.type === 'date' && (
+                        {(field.type === 'date' || field.type === 'time') && (
                           <input
-                            type="date"
+                            type={field.type}
                             value={formData[field.key] || ''}
                             onChange={e => handleField(field.key, e.target.value)}
                             required
                             className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 bg-slate-50"
                           />
                         )}
+
+                        {field.type === 'radio' && (
+                          <div className="grid grid-cols-2 gap-2">
+                            {field.options.map(opt => {
+                              const selected = formData[field.key] === opt
+                              return (
+                                <label
+                                  key={opt}
+                                  className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-bold cursor-pointer transition-all ${
+                                    selected
+                                      ? 'border-sky-600 bg-sky-50 text-sky-900'
+                                      : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300'
+                                  }`}
+                                >
+                                  <input
+                                    type="radio"
+                                    name={field.key}
+                                    value={opt}
+                                    checked={selected}
+                                    onChange={() => handleField(field.key, opt)}
+                                    required
+                                    className="accent-sky-600 shrink-0"
+                                  />
+                                  <span>{opt}</span>
+                                </label>
+                              )
+                            })}
+                          </div>
+                        )}
+
+                        {field.type === 'radio-conditional' && (() => {
+                          const depVal = formData[field.dependsOn]
+                          const opts = depVal ? (field.conditionalOptions[depVal] || []) : []
+                          if (!depVal) {
+                            return (
+                              <p className="text-xs text-slate-400 italic px-3 py-2 bg-slate-50 rounded-xl border border-slate-200">
+                                Select Frequency first
+                              </p>
+                            )
+                          }
+                          return (
+                            <div className={`grid gap-2 ${opts.length === 3 ? 'grid-cols-3' : 'grid-cols-2'}`}>
+                              {opts.map(opt => {
+                                const selected = formData[field.key] === opt
+                                return (
+                                  <label
+                                    key={opt}
+                                    className={`flex items-center gap-1.5 px-2.5 py-2 rounded-xl border text-xs font-bold cursor-pointer transition-all ${
+                                      selected
+                                        ? 'border-sky-600 bg-sky-50 text-sky-900'
+                                        : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300'
+                                    }`}
+                                  >
+                                    <input
+                                      type="radio"
+                                      name={field.key}
+                                      value={opt}
+                                      checked={selected}
+                                      onChange={() => handleField(field.key, opt)}
+                                      required
+                                      className="accent-sky-600 shrink-0"
+                                    />
+                                    <span>{opt}</span>
+                                  </label>
+                                )
+                              })}
+                            </div>
+                          )
+                        })()}
+
+                        {field.type === 'pricing-display' && (() => {
+                          const price = getLongtermPrice(formData.frequency, formData.times, formData.distance)
+                          return (
+                            <div className="px-3.5 py-2.5 rounded-xl border border-sky-200 bg-sky-50/70 flex items-center justify-between">
+                              <span className="text-xs font-bold text-slate-600">
+                                {price !== null ? `${formData.frequency} · ${formData.times} · ${formData.distance}` : 'Estimated Rate'}
+                              </span>
+                              <span className="text-sm font-extrabold text-sky-700">
+                                {price !== null ? `LKR ${price.toLocaleString()}` : 'Select options above'}
+                              </span>
+                            </div>
+                          )
+                        })()}
 
                         {field.type === 'select' && (
                           <select
