@@ -20,8 +20,16 @@ const ALL_DISTRICTS = [
   'Ratnapura', 'Kegalle',                      // Sabaragamuwa
 ]
 
-// Packages that require Western Province
-const WESTERN_ONLY = ['longterm']
+// Equipment list (from chart) used in Customized packages
+const EQUIPMENT_OPTIONS = [
+  'Ladder',
+  'Vacuum Cleaner',
+  'Scrubbing Machine',
+  'High-Pressure Cleaning Machine',
+  'Sofa Shampoo Cleaning Machine',
+  'Steam Cleaning',
+  'Grass Cutting Machine',
+]
 
 /* ─────────────────────────────────────────────
    CATEGORIES & SUB-SERVICES
@@ -34,12 +42,12 @@ const CATEGORIES = [
 
 const SUB_SERVICES = {
   residential: [
-    { id: 'customized', label: 'Customized Cleaning Package',        westernOnly: false },
+    { id: 'customized', label: 'Customized Cleaning Package',        westernOnly: true  },
     { id: 'longterm',   label: 'Long Term Cleaning Agreement',       westernOnly: true  },
     { id: 'premium',    label: 'Pro Session / Premium Deep Cleaning', westernOnly: false },
   ],
   corporate: [
-    { id: 'customized',  label: 'Customized Cleaning Package',         westernOnly: false },
+    { id: 'customized',  label: 'Customized Cleaning Package',         westernOnly: true  },
     { id: 'longterm',    label: 'Long Term Cleaning Agreement',        westernOnly: true  },
     { id: 'fullservice', label: 'Full Service / Premium Deep Cleaning', westernOnly: false },
   ],
@@ -52,37 +60,19 @@ const SUB_SERVICES = {
 const FORMS = {
   'residential-customized': {
     title: 'Customized Cleaning Package — Residential',
+    note: 'Only Western Province',
     fields: [
+      { key: 'name',          label: 'Name',            type: 'text',    placeholder: 'Full name' },
+      { key: 'date',          label: 'Date',            type: 'date' },
+      { key: 'address',       label: 'Address',         type: 'text',    placeholder: 'No, Street, City' },
+      { key: 'contact',       label: 'Contact No',      type: 'tel',     placeholder: '07X XXX XXXX' },
+      { key: 'cleanersCount', label: 'Cleaners Count',  type: 'counter' },
       {
-        key: 'who',
-        label: 'Who / Property Type',
-        type: 'select',
-        options: ['House', 'Apartment', 'Villa', 'Other'],
-      },
-      {
-        key: 'action',
-        label: 'Action / Cleaning Scope',
-        type: 'select',
-        options: ['Interior Only', 'Exterior Only', 'Full Property'],
-      },
-      {
-        key: 'process',
-        label: 'Process / Discovery',
+        key: 'equipment',
+        label: 'Equipment Needed',
         type: 'checks',
-        options: [
-          'General Cleaning',
-          'Kitchen Cleaning',
-          'Bathroom Cleaning',
-          'Window Cleaning',
-          'Floor Scrubbing',
-          'Sofa / Mattress Cleaning',
-          'Garden / Outdoor',
-          'Other',
-        ],
+        options: EQUIPMENT_OPTIONS,
       },
-      { key: 'name',    label: 'Name',    type: 'text', placeholder: 'Full name' },
-      { key: 'address', label: 'Address', type: 'text', placeholder: 'No, Street, City' },
-      { key: 'contact', label: 'Contact', type: 'tel',  placeholder: '07X XXX XXXX' },
     ],
   },
 
@@ -127,33 +117,19 @@ const FORMS = {
 
   'corporate-customized': {
     title: 'Customized Cleaning Package — Corporate',
+    note: 'Only Western Province',
     fields: [
+      { key: 'name',          label: 'Name',            type: 'text',    placeholder: 'Full name' },
+      { key: 'date',          label: 'Date',            type: 'date' },
+      { key: 'address',       label: 'Address',         type: 'text',    placeholder: 'No, Street, City' },
+      { key: 'contact',       label: 'Contact No',      type: 'tel',     placeholder: '07X XXX XXXX' },
+      { key: 'cleanersCount', label: 'Cleaners Count',  type: 'counter' },
       {
-        key: 'serviceCoverage',
-        label: '1) Service Coverage',
-        type: 'text',
-        placeholder: 'e.g. Office floors, washrooms, cafeteria',
+        key: 'equipment',
+        label: 'Equipment Needed',
+        type: 'checks',
+        options: EQUIPMENT_OPTIONS,
       },
-      {
-        key: 'sitePremises',
-        label: '2) Site Premises Allocations',
-        type: 'text',
-        placeholder: 'e.g. 3 floors, 20 rooms',
-      },
-      {
-        key: 'businessOpening',
-        label: '3) Site Business Opening',
-        type: 'text',
-        placeholder: 'e.g. Mon–Fri, 8:00 AM – 6:00 PM',
-      },
-      {
-        key: 'demoSitting',
-        label: '4) Demo Sitting',
-        type: 'select',
-        options: ['Yes', 'No'],
-      },
-      { key: 'name',    label: 'Name',    type: 'text', placeholder: 'Full name' },
-      { key: 'contact', label: 'Contact', type: 'tel',  placeholder: '07X XXX XXXX' },
     ],
   },
 
@@ -209,6 +185,10 @@ function buildWhatsAppMessage(category, subService, district, formData, formDef)
 
   formDef.fields.forEach(field => {
     const val = formData[field.key]
+    if (field.type === 'counter') {
+      lines.push(`*${field.label}:* ${val || 1}`)
+      return
+    }
     if (!val || val === '') return
     if (field.type === 'checks') {
       const checked = Array.isArray(val) ? val.join(', ') : val
@@ -427,7 +407,7 @@ export default function Hero() {
                     <div className="flex items-start gap-2.5 p-3 bg-amber-50 border border-amber-200 rounded-xl mb-4">
                       <AlertCircle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
                       <p className="text-xs text-amber-800 leading-snug">
-                        <span className="font-bold">Note:</span> Long Term Cleaning Agreement packages are only available in the Western Province (Colombo, Gampaha, Kalutara).
+                        <span className="font-bold">Note:</span> Customized Cleaning Package and Long Term Cleaning Agreement are only available in the Western Province (Colombo, Gampaha, Kalutara).
                       </p>
                     </div>
                   )}
@@ -541,18 +521,36 @@ export default function Hero() {
                         )}
 
                         {field.type === 'checks' && (
-                          <div className="grid grid-cols-2 gap-1.5">
+                          <div className="grid grid-cols-1 gap-1.5">
                             {field.options.map(opt => (
-                              <label key={opt} className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                              <label key={opt} className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-slate-50 rounded-lg px-2 py-1 transition-colors">
                                 <input
                                   type="checkbox"
                                   checked={Array.isArray(formData[field.key]) && formData[field.key].includes(opt)}
                                   onChange={e => handleCheck(field.key, opt, e.target.checked)}
-                                  className="rounded accent-sky-600"
+                                  className="rounded accent-sky-600 shrink-0"
                                 />
                                 {opt}
                               </label>
                             ))}
+                          </div>
+                        )}
+
+                        {field.type === 'counter' && (
+                          <div className="flex items-center gap-3 p-2 bg-slate-50 rounded-xl border border-slate-200">
+                            <button
+                              type="button"
+                              onClick={() => handleField(field.key, Math.max(1, (formData[field.key] || 1) - 1))}
+                              className="w-8 h-8 rounded-lg bg-white border border-slate-300 text-slate-800 font-extrabold hover:bg-slate-100 flex items-center justify-center transition-colors cursor-pointer"
+                            >−</button>
+                            <span className="flex-1 text-center text-base font-extrabold text-slate-900">
+                              {formData[field.key] || 1}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleField(field.key, (formData[field.key] || 1) + 1)}
+                              className="w-8 h-8 rounded-lg bg-white border border-slate-300 text-slate-800 font-extrabold hover:bg-slate-100 flex items-center justify-center transition-colors cursor-pointer"
+                            >+</button>
                           </div>
                         )}
                       </div>
