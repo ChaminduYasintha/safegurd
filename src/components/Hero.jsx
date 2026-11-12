@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ArrowRight, Phone, ChevronLeft, CheckCircle2, MapPin, AlertCircle } from 'lucide-react'
+import { ArrowRight, Phone, ChevronLeft, CheckCircle2, MapPin, AlertCircle, ClipboardCheck } from 'lucide-react'
 import heroBgImg from '../assets/hero_bg.jpg'
 
 /* ─────────────────────────────────────────────
@@ -42,14 +42,14 @@ const CATEGORIES = [
 
 const SUB_SERVICES = {
   residential: [
-    { id: 'customized', label: 'Customized Cleaning Package',        westernOnly: true  },
-    { id: 'longterm',   label: 'Long Term Cleaning Agreement',       westernOnly: true  },
-    { id: 'premium',    label: 'Full House / Premises Deep Cleaning', westernOnly: false },
+    { id: 'customized', label: 'Customized Cleaning Package',          westernOnly: true,  requiresInspection: false },
+    { id: 'longterm',   label: 'Long Term Cleaning Agreement',         westernOnly: true,  requiresInspection: false },
+    { id: 'premium',    label: 'Full House / Premises Deep Cleaning',  westernOnly: false, requiresInspection: true  },
   ],
   corporate: [
-    { id: 'customized',  label: 'Customized Cleaning Package',         westernOnly: true  },
-    { id: 'longterm',    label: 'Long Term Cleaning Agreement',        westernOnly: true  },
-    { id: 'fullservice', label: 'Full Service / Premium Deep Cleaning', westernOnly: false },
+    { id: 'customized',  label: 'Customized Cleaning Package',          westernOnly: true,  requiresInspection: false },
+    { id: 'longterm',    label: 'Long Term Cleaning Agreement',         westernOnly: false, requiresInspection: true  },
+    { id: 'fullservice', label: 'Full Service / Premium Deep Cleaning', westernOnly: false, requiresInspection: true  },
   ],
 }
 
@@ -124,13 +124,14 @@ const FORMS = {
 
   'residential-premium': {
     title: 'Full House / Premises Deep Cleaning',
-    note: 'Request a Inspection',
+    isInspection: true,
+    note: 'Free on-site inspection required to assess your premises before quoting.',
     fields: [
-      { key: 'name',    label: 'Name',       type: 'text', placeholder: 'Full name' },
-      { key: 'date',    label: 'Date',       type: 'date' },
-      { key: 'time',    label: 'Time',       type: 'time' },
-      { key: 'address', label: 'Address',    type: 'text', placeholder: 'No, Street, City' },
-      { key: 'contact', label: 'Contact No', type: 'tel',  placeholder: '07X XXX XXXX' },
+      { key: 'name',    label: 'Name',                     type: 'text', placeholder: 'Full name' },
+      { key: 'date',    label: 'Preferred Inspection Date', type: 'date' },
+      { key: 'time',    label: 'Preferred Inspection Time', type: 'time' },
+      { key: 'address', label: 'Address',                  type: 'text', placeholder: 'No, Street, City' },
+      { key: 'contact', label: 'Contact No',               type: 'tel',  placeholder: '07X XXX XXXX' },
     ],
   },
 
@@ -154,29 +155,31 @@ const FORMS = {
 
   'corporate-longterm': {
     title: 'Long Term Cleaning Agreement — Corporate',
-    note: 'Requires a Disposition',
+    isInspection: true,
+    note: 'Available island-wide. Free site inspection required before final quotation.',
     fields: [
       ...CORPORATE_IDENTITY_FIELDS,
-      { key: 'food',    label: 'Food',    type: 'select', options: ['Provided', 'Not Provided'] },
-      { key: 'address', label: 'Address', type: 'text', placeholder: 'No, Street, City' },
-      { key: 'contact', label: 'Contact', type: 'tel',  placeholder: '07X XXX XXXX' },
+      { key: 'food',    label: 'Food',       type: 'select', options: ['Provided', 'Not Provided'] },
+      { key: 'address', label: 'Address',    type: 'text',   placeholder: 'No, Street, City' },
+      { key: 'contact', label: 'Contact No', type: 'tel',    placeholder: '07X XXX XXXX' },
     ],
   },
 
   'corporate-fullservice': {
     title: 'Full Service / Premium Deep Cleaning — Corporate',
-    note: 'For works information',
+    isInspection: true,
+    note: 'Available island-wide. Free site inspection required before final quotation.',
     fields: [
       ...CORPORATE_IDENTITY_FIELDS,
-      { key: 'date',    label: 'Date',    type: 'date' },
+      { key: 'date',    label: 'Preferred Inspection Date', type: 'date' },
       {
         key: 'day',
-        label: 'Day',
+        label: 'Preferred Day',
         type: 'select',
         options: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday', 'Flexible'],
       },
-      { key: 'address', label: 'Address', type: 'text', placeholder: 'No, Street, City' },
-      { key: 'contact', label: 'Contact', type: 'tel',  placeholder: '07X XXX XXXX' },
+      { key: 'address', label: 'Address',    type: 'text', placeholder: 'No, Street, City' },
+      { key: 'contact', label: 'Contact No', type: 'tel',  placeholder: '07X XXX XXXX' },
     ],
   },
 }
@@ -410,7 +413,10 @@ export default function Hero() {
                     <div className="flex items-start gap-2.5 p-3 bg-amber-50 border border-amber-200 rounded-xl mb-4">
                       <AlertCircle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
                       <p className="text-xs text-amber-800 leading-snug">
-                        <span className="font-bold">Note:</span> Customized Cleaning Package and Long Term Cleaning Agreement are only available in the Western Province (Colombo, Gampaha, Kalutara).
+                        <span className="font-bold">Note:</span>{' '}
+                        {category === 'corporate'
+                          ? 'Customized Cleaning Package is only available in the Western Province (Colombo, Gampaha, Kalutara). Long Term & Full Service packages are available in your district via site inspection.'
+                          : 'Customized Cleaning Package and Long Term Cleaning Agreement are only available in the Western Province (Colombo, Gampaha, Kalutara).'}
                       </p>
                     </div>
                   )}
@@ -465,6 +471,11 @@ export default function Hero() {
                                 Western Province only
                               </div>
                             )}
+                            {!blocked && sub.requiresInspection && (
+                              <div className="text-[10px] mt-0.5 font-semibold text-sky-600">
+                                Requires free on-site inspection
+                              </div>
+                            )}
                           </div>
                           {!blocked && <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-sky-500 mt-0.5 shrink-0" />}
                         </button>
@@ -478,10 +489,19 @@ export default function Hero() {
               {step === 'form' && formDef && (
                 <>
                   <h3 className="text-base font-extrabold text-slate-900 mb-0.5 leading-snug">{formDef.title}</h3>
-                  {formDef.note && (
-                    <p className="text-xs font-semibold text-sky-700 mb-1">{formDef.note}</p>
-                  )}
-                  <p className="text-[11px] text-slate-400 mb-4">District: {district}</p>
+                  <p className="text-[11px] text-slate-400 mb-3">District: {district}</p>
+
+                  {formDef.isInspection ? (
+                    <div className="flex items-start gap-2.5 p-3 bg-sky-50 border border-sky-200 rounded-xl mb-3">
+                      <ClipboardCheck className="w-4 h-4 text-sky-600 mt-0.5 shrink-0" />
+                      <div className="text-xs leading-snug">
+                        <div className="font-extrabold text-sky-900">Request a Site Inspection</div>
+                        <div className="text-sky-800 mt-0.5">{formDef.note}</div>
+                      </div>
+                    </div>
+                  ) : formDef.note ? (
+                    <p className="text-xs font-semibold text-sky-700 mb-3">{formDef.note}</p>
+                  ) : null}
 
                   <form onSubmit={handleSubmit} className="space-y-3 max-h-[370px] overflow-y-auto pr-1">
                     {formDef.fields.map(field => (
@@ -646,7 +666,7 @@ export default function Hero() {
                       type="submit"
                       className="w-full py-3.5 px-4 bg-sky-600 hover:bg-sky-500 text-white font-extrabold rounded-2xl shadow-lg shadow-sky-600/30 hover:shadow-sky-500/50 transition-all flex items-center justify-center gap-2 cursor-pointer hover:-translate-y-0.5 active:translate-y-0 mt-2"
                     >
-                      <span>Get a Quote</span>
+                      <span>{formDef.isInspection ? 'Request an Inspection' : 'Get a Quote'}</span>
                       <ArrowRight className="w-4 h-4" />
                     </button>
                   </form>
@@ -657,9 +677,14 @@ export default function Hero() {
               {step === 'done' && (
                 <div className="text-center py-4">
                   <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto mb-3" />
-                  <h3 className="text-lg font-extrabold text-slate-900 mb-2">Quote Request Received!</h3>
+                  <h3 className="text-lg font-extrabold text-slate-900 mb-2">
+                    {formDef?.isInspection ? 'Inspection Request Received!' : 'Quote Request Received!'}
+                  </h3>
                   <p className="text-sm text-slate-500 mb-4 leading-relaxed">
-                    Thank you{formData.name ? `, ${formData.name}` : ''}. Our team will contact you shortly.
+                    Thank you{formData.name ? `, ${formData.name}` : ''}.{' '}
+                    {formDef?.isInspection
+                      ? 'Our team will contact you shortly to confirm your free on-site inspection.'
+                      : 'Our team will contact you shortly.'}
                   </p>
                   <div className="text-left text-xs bg-slate-50 border border-slate-200 rounded-xl p-3.5 mb-5 space-y-1 text-slate-700">
                     <div><span className="font-bold">Type:</span> {category === 'residential' ? 'Residential' : 'Corporate'}</div>
