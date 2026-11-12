@@ -82,6 +82,8 @@ function getLongtermPrice(frequency, times, distance) {
    FORM DEFINITIONS — words from chart only
 ───────────────────────────────────────────── */
 
+const INSPECTION_NOTE = 'Site inspection required before final quotation.'
+
 const CORPORATE_IDENTITY_FIELDS = [
   { key: 'companyName', label: 'Company Name',           type: 'text', placeholder: 'Company name' },
   { key: 'name',        label: 'Authorized Person Name', type: 'text', placeholder: 'Full name' },
@@ -125,7 +127,7 @@ const FORMS = {
   'residential-premium': {
     title: 'Full House / Premises Deep Cleaning',
     isInspection: true,
-    note: 'Free on-site inspection required to assess your premises before quoting.',
+    note: INSPECTION_NOTE,
     fields: [
       { key: 'name',    label: 'Name',                     type: 'text', placeholder: 'Full name' },
       { key: 'date',    label: 'Preferred Inspection Date', type: 'date' },
@@ -156,7 +158,7 @@ const FORMS = {
   'corporate-longterm': {
     title: 'Long Term Cleaning Agreement — Corporate',
     isInspection: true,
-    note: 'Available island-wide. Free site inspection required before final quotation.',
+    note: INSPECTION_NOTE,
     fields: [
       ...CORPORATE_IDENTITY_FIELDS,
       { key: 'address', label: 'Address',    type: 'text',   placeholder: 'No, Street, City' },
@@ -167,7 +169,7 @@ const FORMS = {
   'corporate-fullservice': {
     title: 'Full Service / Premium Deep Cleaning — Corporate',
     isInspection: true,
-    note: 'Available island-wide. Free site inspection required before final quotation.',
+    note: INSPECTION_NOTE,
     fields: [
       ...CORPORATE_IDENTITY_FIELDS,
       { key: 'date',    label: 'Preferred Inspection Date', type: 'date' },
@@ -473,7 +475,7 @@ export default function Hero() {
                             )}
                             {!blocked && sub.requiresInspection && (
                               <div className="text-[10px] mt-0.5 font-semibold text-sky-600">
-                                Requires free on-site inspection
+                                Requires site inspection
                               </div>
                             )}
                           </div>
@@ -683,7 +685,7 @@ export default function Hero() {
                   <p className="text-sm text-slate-500 mb-4 leading-relaxed">
                     Thank you{formData.name ? `, ${formData.name}` : ''}.{' '}
                     {formDef?.isInspection
-                      ? 'Our team will contact you shortly to confirm your free on-site inspection.'
+                      ? 'Our team will contact you shortly to confirm your site inspection.'
                       : 'Our team will contact you shortly.'}
                   </p>
                   <div className="text-left text-xs bg-slate-50 border border-slate-200 rounded-xl p-3.5 mb-5 space-y-1 text-slate-700">
