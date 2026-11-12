@@ -96,15 +96,16 @@ const FORMS = {
     note: 'Only Western Province',
     fields: [
       { key: 'name',          label: 'Name',            type: 'text',    placeholder: 'Full name' },
-      { key: 'date',          label: 'Date',            type: 'date' },
-      { key: 'address',       label: 'Address',         type: 'text',    placeholder: 'No, Street, City' },
       { key: 'contact',       label: 'Contact No',      type: 'tel',     placeholder: '07X XXX XXXX' },
+      { key: 'date',          label: 'Date',            type: 'date' },
       { key: 'cleanersCount', label: 'Cleaners Count',  type: 'counter' },
+      { key: 'address',       label: 'Address',         type: 'text',    placeholder: 'No, Street, City', fullWidth: true },
       {
         key: 'equipment',
         label: 'Equipment Needed',
         type: 'checks',
         options: EQUIPMENT_OPTIONS,
+        fullWidth: true,
       },
     ],
   },
@@ -114,13 +115,13 @@ const FORMS = {
     note: 'Only Western Province',
     isLongTerm: true,
     fields: [
-      { key: 'frequency', label: 'Frequency',       type: 'radio', options: ['Weekly', 'Monthly'] },
-      { key: 'times',     label: 'How many times ?', type: 'radio-conditional', dependsOn: 'frequency', conditionalOptions: LONGTERM_TIMES },
-      { key: 'distance',  label: 'Distance',         type: 'radio', options: ['Within 20 KM', 'Beyond 20 KM'] },
-      { key: '_pricing',  label: 'PRICING',          type: 'pricing-display' },
-      { key: 'name',      label: 'Name',             type: 'text', placeholder: 'Full name' },
-      { key: 'address',   label: 'Address',          type: 'text', placeholder: 'No, Street, City' },
-      { key: 'contact',   label: 'Contact',          type: 'tel',  placeholder: '07X XXX XXXX' },
+      { key: 'frequency', label: 'Frequency',        type: 'radio',             options: ['Weekly', 'Monthly'], fullWidth: true },
+      { key: 'times',     label: 'How many times ?', type: 'radio-conditional', dependsOn: 'frequency', conditionalOptions: LONGTERM_TIMES, fullWidth: true },
+      { key: 'distance',  label: 'Distance',         type: 'radio',             options: ['Within 20 KM', 'Beyond 20 KM'], fullWidth: true },
+      { key: '_pricing',  label: 'PRICING',          type: 'pricing-display',   fullWidth: true },
+      { key: 'name',      label: 'Name',             type: 'text',              placeholder: 'Full name' },
+      { key: 'contact',   label: 'Contact',          type: 'tel',               placeholder: '07X XXX XXXX' },
+      { key: 'address',   label: 'Address',          type: 'text',              placeholder: 'No, Street, City', fullWidth: true },
     ],
   },
 
@@ -129,11 +130,11 @@ const FORMS = {
     isInspection: true,
     note: INSPECTION_NOTE,
     fields: [
-      { key: 'name',    label: 'Name',                     type: 'text', placeholder: 'Full name' },
+      { key: 'name',    label: 'Name',                      type: 'text', placeholder: 'Full name' },
+      { key: 'contact', label: 'Contact No',                type: 'tel',  placeholder: '07X XXX XXXX' },
       { key: 'date',    label: 'Preferred Inspection Date', type: 'date' },
       { key: 'time',    label: 'Preferred Inspection Time', type: 'time' },
-      { key: 'address', label: 'Address',                  type: 'text', placeholder: 'No, Street, City' },
-      { key: 'contact', label: 'Contact No',               type: 'tel',  placeholder: '07X XXX XXXX' },
+      { key: 'address', label: 'Address',                   type: 'text', placeholder: 'No, Street, City', fullWidth: true },
     ],
   },
 
@@ -142,15 +143,16 @@ const FORMS = {
     note: 'Only Western Province',
     fields: [
       ...CORPORATE_IDENTITY_FIELDS,
-      { key: 'date',          label: 'Date',            type: 'date' },
-      { key: 'address',       label: 'Address',         type: 'text',    placeholder: 'No, Street, City' },
       { key: 'contact',       label: 'Contact No',      type: 'tel',     placeholder: '07X XXX XXXX' },
+      { key: 'date',          label: 'Date',            type: 'date' },
       { key: 'cleanersCount', label: 'Cleaners Count',  type: 'counter' },
+      { key: 'address',       label: 'Address',         type: 'text',    placeholder: 'No, Street, City', fullWidth: true },
       {
         key: 'equipment',
         label: 'Equipment Needed',
         type: 'checks',
         options: EQUIPMENT_OPTIONS,
+        fullWidth: true,
       },
     ],
   },
@@ -161,8 +163,8 @@ const FORMS = {
     note: INSPECTION_NOTE,
     fields: [
       ...CORPORATE_IDENTITY_FIELDS,
-      { key: 'address', label: 'Address',    type: 'text',   placeholder: 'No, Street, City' },
-      { key: 'contact', label: 'Contact No', type: 'tel',    placeholder: '07X XXX XXXX' },
+      { key: 'contact', label: 'Contact No', type: 'tel',  placeholder: '07X XXX XXXX' },
+      { key: 'address', label: 'Address',    type: 'text', placeholder: 'No, Street, City', fullWidth: true },
     ],
   },
 
@@ -172,6 +174,7 @@ const FORMS = {
     note: INSPECTION_NOTE,
     fields: [
       ...CORPORATE_IDENTITY_FIELDS,
+      { key: 'contact', label: 'Contact No',                type: 'tel', placeholder: '07X XXX XXXX' },
       { key: 'date',    label: 'Preferred Inspection Date', type: 'date' },
       {
         key: 'day',
@@ -179,8 +182,7 @@ const FORMS = {
         type: 'select',
         options: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday', 'Flexible'],
       },
-      { key: 'address', label: 'Address',    type: 'text', placeholder: 'No, Street, City' },
-      { key: 'contact', label: 'Contact No', type: 'tel',  placeholder: '07X XXX XXXX' },
+      { key: 'address', label: 'Address', type: 'text', placeholder: 'No, Street, City', fullWidth: true },
     ],
   },
 }
@@ -271,10 +273,10 @@ export default function Hero() {
       }}
     >
       <div className="relative z-10 max-w-7xl mx-auto px-5 lg:px-8 w-full">
-        <div className="grid lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+        <div className="grid lg:grid-cols-12 gap-8 lg:gap-10 items-center">
 
           {/* ── LEFT COLUMN ── */}
-          <div className="lg:col-span-7 text-white">
+          <div className="lg:col-span-6 text-white">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-900/80 border border-emerald-400/50 text-emerald-300 text-xs font-extrabold uppercase tracking-wider mb-5 shadow-sm backdrop-blur-xs">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               <span>CLEAN SPACES. PROFESSIONAL CARE.</span>
@@ -320,7 +322,7 @@ export default function Hero() {
           </div>
 
           {/* ── RIGHT COLUMN: Quote Calculator ── */}
-          <div className="lg:col-span-5" id="quote-card">
+          <div className="lg:col-span-6" id="quote-card">
             <div className="bg-white rounded-[2rem] p-6 sm:p-7 shadow-2xl border border-slate-100 text-slate-900">
 
               {/* Progress bar */}
@@ -505,9 +507,11 @@ export default function Hero() {
                     <p className="text-xs font-semibold text-sky-700 mb-3">{formDef.note}</p>
                   ) : null}
 
-                  <form onSubmit={handleSubmit} className="space-y-3 max-h-[370px] overflow-y-auto pr-1">
-                    {formDef.fields.map(field => (
-                      <div key={field.key}>
+                  <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    {formDef.fields.map(field => {
+                      const spanFull = field.fullWidth || ['radio', 'radio-conditional', 'pricing-display', 'checks'].includes(field.type)
+                      return (
+                      <div key={field.key} className={spanFull ? 'sm:col-span-2' : ''}>
                         <label className="block text-xs font-bold text-slate-700 mb-1">{field.label}</label>
 
                         {(field.type === 'text' || field.type === 'tel') && (
@@ -517,7 +521,7 @@ export default function Hero() {
                             value={formData[field.key] || ''}
                             onChange={e => handleField(field.key, e.target.value)}
                             required
-                            className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 bg-slate-50 placeholder-slate-400"
+                            className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30 bg-slate-50 placeholder-slate-400"
                           />
                         )}
 
@@ -527,7 +531,7 @@ export default function Hero() {
                             value={formData[field.key] || ''}
                             onChange={e => handleField(field.key, e.target.value)}
                             required
-                            className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 bg-slate-50"
+                            className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30 bg-slate-50"
                           />
                         )}
 
@@ -619,7 +623,7 @@ export default function Hero() {
                             value={formData[field.key] || ''}
                             onChange={e => handleField(field.key, e.target.value)}
                             required
-                            className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 bg-slate-50"
+                            className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30 bg-slate-50"
                           >
                             <option value="">— Select —</option>
                             {field.options.map(opt => (
@@ -629,7 +633,7 @@ export default function Hero() {
                         )}
 
                         {field.type === 'checks' && (
-                          <div className="grid grid-cols-1 gap-1.5">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                             {field.options.map(opt => (
                               <label key={opt} className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-slate-50 rounded-lg px-2 py-1 transition-colors">
                                 <input
@@ -645,7 +649,7 @@ export default function Hero() {
                         )}
 
                         {field.type === 'counter' && (
-                          <div className="flex items-center gap-3 p-2 bg-slate-50 rounded-xl border border-slate-200">
+                          <div className="flex items-center gap-3 p-1.5 bg-slate-50 rounded-xl border border-slate-200">
                             <button
                               type="button"
                               onClick={() => handleField(field.key, Math.max(1, (formData[field.key] || 1) - 1))}
@@ -662,11 +666,12 @@ export default function Hero() {
                           </div>
                         )}
                       </div>
-                    ))}
+                      )
+                    })}
 
                     <button
                       type="submit"
-                      className="w-full py-3.5 px-4 bg-sky-600 hover:bg-sky-500 text-white font-extrabold rounded-2xl shadow-lg shadow-sky-600/30 hover:shadow-sky-500/50 transition-all flex items-center justify-center gap-2 cursor-pointer hover:-translate-y-0.5 active:translate-y-0 mt-2"
+                      className="sm:col-span-2 w-full py-3.5 px-4 bg-sky-600 hover:bg-sky-500 text-white font-extrabold rounded-2xl shadow-lg shadow-sky-600/30 hover:shadow-sky-500/50 transition-all flex items-center justify-center gap-2 cursor-pointer hover:-translate-y-0.5 active:translate-y-0 mt-1"
                     >
                       <span>{formDef.isInspection ? 'Request an Inspection' : 'Get a Quote'}</span>
                       <ArrowRight className="w-4 h-4" />
