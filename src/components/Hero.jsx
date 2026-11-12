@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ArrowRight, Phone, ChevronLeft, Send, CheckCircle2, MapPin, AlertCircle } from 'lucide-react'
+import { ArrowRight, Phone, ChevronLeft, CheckCircle2, MapPin, AlertCircle } from 'lucide-react'
 import heroBgImg from '../assets/hero_bg.jpg'
 
 /* ─────────────────────────────────────────────
@@ -178,55 +178,12 @@ const FORMS = {
 }
 
 /* ─────────────────────────────────────────────
-   WHATSAPP MESSAGE BUILDER
-───────────────────────────────────────────── */
-
-function buildWhatsAppMessage(category, subService, district, formData, formDef) {
-  const catLabel = category === 'residential' ? 'Residential' : 'Corporate'
-  const subLabel = SUB_SERVICES[category].find(s => s.id === subService)?.label || subService
-
-  const lines = [
-    `📋 *New Quote Request — Safeguard Cleaning Services*`,
-    ``,
-    `*Category:* ${catLabel}`,
-    `*Service:* ${subLabel}`,
-    `*Location / District:* ${district}`,
-    ``,
-  ]
-
-  if (formDef.note) lines.push(`_${formDef.note}_`, ``)
-
-  formDef.fields.forEach(field => {
-    if (field.type === 'pricing-display') {
-      const price = getLongtermPrice(formData.frequency, formData.times, formData.distance)
-      if (price !== null) lines.push(`*${field.label}:* LKR ${price.toLocaleString()}`)
-      return
-    }
-    const val = formData[field.key]
-    if (field.type === 'counter') {
-      lines.push(`*${field.label}:* ${val || 1}`)
-      return
-    }
-    if (!val || val === '') return
-    if (field.type === 'checks') {
-      const checked = Array.isArray(val) ? val.join(', ') : val
-      lines.push(`*${field.label}:* ${checked}`)
-    } else {
-      lines.push(`*${field.label}:* ${val}`)
-    }
-  })
-
-  lines.push(``, `_Sent via safeguardclean.lk_`)
-  return encodeURIComponent(lines.join('\n'))
-}
-
-/* ─────────────────────────────────────────────
    MAIN HERO COMPONENT
 ───────────────────────────────────────────── */
 
 export default function Hero() {
   const [step, setStep]             = useState('category')   // category | location | subservice | form | done
-  const [category, setCategory]     = useState(null)
+  const [category, setCategory]     = useState('residential')
   const [district, setDistrict]     = useState('')
   const [subService, setSubService] = useState(null)
   const [formData, setFormData]     = useState({})
@@ -237,7 +194,12 @@ export default function Hero() {
   const formDef = formKey ? FORMS[formKey] : null
 
   /* helpers */
-  const selectCategory = (id) => { setCategory(id); setStep('location') }
+  const selectCategory = (id) => { setCategory(id) }
+
+  const confirmCategory = () => {
+    if (!category) return
+    setStep('location')
+  }
 
   const confirmLocation = () => {
     if (!district) return
@@ -252,7 +214,7 @@ export default function Hero() {
   }
 
   const goBack = () => {
-    if (step === 'location')    { setCategory(null); setDistrict(''); setStep('category') }
+    if (step === 'location')    { setDistrict(''); setStep('category') }
     if (step === 'subservice')  { setDistrict(''); setStep('location') }
     if (step === 'form')        { setSubService(null); setStep('subservice') }
   }
@@ -273,14 +235,12 @@ export default function Hero() {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    const msg = buildWhatsAppMessage(category, subService, district, formData, formDef)
-    window.open(`https://wa.me/94704906565?text=${msg}`, '_blank')
     setStep('done')
   }
 
   const reset = () => {
     setStep('category')
-    setCategory(null)
+    setCategory('residential')
     setDistrict('')
     setSubService(null)
     setFormData({})
@@ -377,19 +337,37 @@ export default function Hero() {
                 <>
                   <h3 className="text-xl font-extrabold text-slate-900 mb-1">Book Your Service</h3>
                   <p className="text-xs text-slate-500 mb-5">Select your client type to get started</p>
-                  <div className="grid grid-cols-2 gap-3">
-                    {CATEGORIES.map(cat => (
-                      <button
-                        key={cat.id}
-                        onClick={() => selectCategory(cat.id)}
-                        className="flex flex-col items-center gap-2 p-5 rounded-2xl border-2 border-slate-200 hover:border-sky-500 hover:bg-sky-50 transition-all cursor-pointer group"
-                      >
-                        <span className="text-3xl">{cat.icon}</span>
-                        <span className="text-sm font-extrabold text-slate-800 group-hover:text-sky-700">{cat.label}</span>
-                        <span className="text-[11px] text-slate-500 text-center leading-snug">{cat.desc}</span>
-                      </button>
-                    ))}
+                  <div className="grid grid-cols-2 gap-3 mb-6">
+                    {CATEGORIES.map(cat => {
+                      const active = category === cat.id
+                      return (
+                        <button
+                          key={cat.id}
+                          type="button"
+                          onClick={() => selectCategory(cat.id)}
+                          className={`flex flex-col items-center gap-2 p-5 rounded-2xl border-2 transition-all cursor-pointer group ${
+                            active
+                              ? 'border-sky-600 bg-sky-50 ring-1 ring-sky-600'
+                              : 'border-slate-200 hover:border-sky-500 hover:bg-sky-50'
+                          }`}
+                        >
+                          <span className="text-3xl">{cat.icon}</span>
+                          <span className={`text-sm font-extrabold ${active ? 'text-sky-900' : 'text-slate-800 group-hover:text-sky-700'}`}>
+                            {cat.label}
+                          </span>
+                          <span className="text-[11px] text-slate-500 text-center leading-snug">{cat.desc}</span>
+                        </button>
+                      )
+                    })}
                   </div>
+                  <button
+                    type="button"
+                    onClick={confirmCategory}
+                    className="w-full py-4 px-4 bg-sky-600 hover:bg-sky-500 text-white font-extrabold rounded-2xl shadow-lg shadow-sky-600/30 hover:shadow-sky-500/50 transition-all flex items-center justify-center gap-2 cursor-pointer hover:-translate-y-0.5 active:translate-y-0"
+                  >
+                    <span>Get a Quote</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
                 </>
               )}
 
@@ -499,7 +477,7 @@ export default function Hero() {
                   {formDef.note && (
                     <p className="text-xs font-semibold text-sky-700 mb-1">{formDef.note}</p>
                   )}
-                  <p className="text-[11px] text-slate-400 mb-4">District: {district} · Send via WhatsApp</p>
+                  <p className="text-[11px] text-slate-400 mb-4">District: {district}</p>
 
                   <form onSubmit={handleSubmit} className="space-y-3 max-h-[370px] overflow-y-auto pr-1">
                     {formDef.fields.map(field => (
@@ -662,10 +640,10 @@ export default function Hero() {
 
                     <button
                       type="submit"
-                      className="w-full py-3.5 px-4 bg-green-600 hover:bg-green-500 text-white font-extrabold rounded-2xl shadow-lg shadow-green-600/30 hover:shadow-green-500/50 transition-all flex items-center justify-center gap-2 cursor-pointer hover:-translate-y-0.5 active:translate-y-0 mt-2"
+                      className="w-full py-3.5 px-4 bg-sky-600 hover:bg-sky-500 text-white font-extrabold rounded-2xl shadow-lg shadow-sky-600/30 hover:shadow-sky-500/50 transition-all flex items-center justify-center gap-2 cursor-pointer hover:-translate-y-0.5 active:translate-y-0 mt-2"
                     >
-                      <Send className="w-4 h-4" />
-                      <span>Send via WhatsApp</span>
+                      <span>Get a Quote</span>
+                      <ArrowRight className="w-4 h-4" />
                     </button>
                   </form>
                 </>
@@ -674,11 +652,21 @@ export default function Hero() {
               {/* ── STEP 5: Done ── */}
               {step === 'done' && (
                 <div className="text-center py-4">
-                  <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto mb-3" />
-                  <h3 className="text-lg font-extrabold text-slate-900 mb-2">Request Sent!</h3>
-                  <p className="text-sm text-slate-500 mb-5 leading-relaxed">
-                    Your quote request has been sent via WhatsApp.<br />We'll get back to you shortly.
+                  <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto mb-3" />
+                  <h3 className="text-lg font-extrabold text-slate-900 mb-2">Quote Request Received!</h3>
+                  <p className="text-sm text-slate-500 mb-4 leading-relaxed">
+                    Thank you{formData.name ? `, ${formData.name}` : ''}. Our team will contact you shortly.
                   </p>
+                  <div className="text-left text-xs bg-slate-50 border border-slate-200 rounded-xl p-3.5 mb-5 space-y-1 text-slate-700">
+                    <div><span className="font-bold">Type:</span> {category === 'residential' ? 'Residential' : 'Corporate'}</div>
+                    <div><span className="font-bold">District:</span> {district}</div>
+                    {formDef && <div><span className="font-bold">Package:</span> {formDef.title}</div>}
+                    {formDef?.isLongTerm && getLongtermPrice(formData.frequency, formData.times, formData.distance) !== null && (
+                      <div className="pt-1 text-sky-700 font-extrabold">
+                        Estimated Rate: LKR {getLongtermPrice(formData.frequency, formData.times, formData.distance).toLocaleString()}
+                      </div>
+                    )}
+                  </div>
                   <button
                     onClick={reset}
                     className="w-full py-3 bg-sky-600 hover:bg-sky-500 text-white font-bold rounded-2xl transition-all cursor-pointer"
