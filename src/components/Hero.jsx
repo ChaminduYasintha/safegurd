@@ -82,6 +82,12 @@ function getLongtermPrice(frequency, times, distance) {
    FORM DEFINITIONS — words from chart only
 ───────────────────────────────────────────── */
 
+const CORPORATE_IDENTITY_FIELDS = [
+  { key: 'companyName', label: 'Company Name',           type: 'text', placeholder: 'Company name' },
+  { key: 'name',        label: 'Authorized Person Name', type: 'text', placeholder: 'Full name' },
+  { key: 'role',        label: 'Role',                   type: 'text', placeholder: 'e.g. Facility Manager' },
+]
+
 const FORMS = {
   'residential-customized': {
     title: 'Customized Cleaning Package — Residential',
@@ -132,7 +138,7 @@ const FORMS = {
     title: 'Customized Cleaning Package — Corporate',
     note: 'Only Western Province',
     fields: [
-      { key: 'name',          label: 'Name',            type: 'text',    placeholder: 'Full name' },
+      ...CORPORATE_IDENTITY_FIELDS,
       { key: 'date',          label: 'Date',            type: 'date' },
       { key: 'address',       label: 'Address',         type: 'text',    placeholder: 'No, Street, City' },
       { key: 'contact',       label: 'Contact No',      type: 'tel',     placeholder: '07X XXX XXXX' },
@@ -150,8 +156,7 @@ const FORMS = {
     title: 'Long Term Cleaning Agreement — Corporate',
     note: 'Requires a Disposition',
     fields: [
-      { key: 'name',    label: 'Name',    type: 'text', placeholder: 'Full name' },
-      { key: 'role',    label: 'Role',    type: 'text', placeholder: 'e.g. Facility Manager' },
+      ...CORPORATE_IDENTITY_FIELDS,
       { key: 'food',    label: 'Food',    type: 'select', options: ['Provided', 'Not Provided'] },
       { key: 'address', label: 'Address', type: 'text', placeholder: 'No, Street, City' },
       { key: 'contact', label: 'Contact', type: 'tel',  placeholder: '07X XXX XXXX' },
@@ -162,8 +167,8 @@ const FORMS = {
     title: 'Full Service / Premium Deep Cleaning — Corporate',
     note: 'For works information',
     fields: [
+      ...CORPORATE_IDENTITY_FIELDS,
       { key: 'date',    label: 'Date',    type: 'date' },
-      { key: 'role',    label: 'Role',    type: 'text', placeholder: 'e.g. Operations Manager' },
       {
         key: 'day',
         label: 'Day',
@@ -171,7 +176,6 @@ const FORMS = {
         options: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday', 'Flexible'],
       },
       { key: 'address', label: 'Address', type: 'text', placeholder: 'No, Street, City' },
-      { key: 'name',    label: 'Name',    type: 'text', placeholder: 'Full name' },
       { key: 'contact', label: 'Contact', type: 'tel',  placeholder: '07X XXX XXXX' },
     ],
   },
@@ -659,6 +663,8 @@ export default function Hero() {
                   </p>
                   <div className="text-left text-xs bg-slate-50 border border-slate-200 rounded-xl p-3.5 mb-5 space-y-1 text-slate-700">
                     <div><span className="font-bold">Type:</span> {category === 'residential' ? 'Residential' : 'Corporate'}</div>
+                    {formData.companyName && <div><span className="font-bold">Company:</span> {formData.companyName}</div>}
+                    {formData.role && <div><span className="font-bold">Authorized Person:</span> {formData.name} ({formData.role})</div>}
                     <div><span className="font-bold">District:</span> {district}</div>
                     {formDef && <div><span className="font-bold">Package:</span> {formDef.title}</div>}
                     {formDef?.isLongTerm && getLongtermPrice(formData.frequency, formData.times, formData.distance) !== null && (
