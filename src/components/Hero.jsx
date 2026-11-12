@@ -189,7 +189,7 @@ const FORMS = {
 
 export default function Hero() {
   const [step, setStep]             = useState('category')   // category | location | subservice | form | done
-  const [category, setCategory]     = useState('residential')
+  const [category, setCategory]     = useState(null)
   const [district, setDistrict]     = useState('')
   const [subService, setSubService] = useState(null)
   const [formData, setFormData]     = useState({})
@@ -246,7 +246,7 @@ export default function Hero() {
 
   const reset = () => {
     setStep('category')
-    setCategory('residential')
+    setCategory(null)
     setDistrict('')
     setSubService(null)
     setFormData({})
@@ -369,7 +369,8 @@ export default function Hero() {
                   <button
                     type="button"
                     onClick={confirmCategory}
-                    className="w-full py-4 px-4 bg-sky-600 hover:bg-sky-500 text-white font-extrabold rounded-2xl shadow-lg shadow-sky-600/30 hover:shadow-sky-500/50 transition-all flex items-center justify-center gap-2 cursor-pointer hover:-translate-y-0.5 active:translate-y-0"
+                    disabled={!category}
+                    className="w-full py-4 px-4 bg-sky-600 hover:bg-sky-500 disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none disabled:hover:translate-y-0 disabled:cursor-not-allowed text-white font-extrabold rounded-2xl shadow-lg shadow-sky-600/30 hover:shadow-sky-500/50 transition-all flex items-center justify-center gap-2 cursor-pointer hover:-translate-y-0.5 active:translate-y-0"
                   >
                     <span>Get a Quote</span>
                     <ArrowRight className="w-4 h-4" />
