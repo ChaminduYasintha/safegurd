@@ -1,104 +1,189 @@
 import { useState } from 'react'
-import { ArrowRight, Phone, ChevronLeft, Send, CheckCircle2 } from 'lucide-react'
+import { ArrowRight, Phone, ChevronLeft, Send, CheckCircle2, MapPin, AlertCircle } from 'lucide-react'
 import heroBgImg from '../assets/hero_bg.jpg'
 
 /* ─────────────────────────────────────────────
-   STEP DEFINITIONS
+   LOCATION DATA
+───────────────────────────────────────────── */
+
+const WESTERN_DISTRICTS = ['Colombo', 'Gampaha', 'Kalutara']
+
+const ALL_DISTRICTS = [
+  'Colombo', 'Gampaha', 'Kalutara',           // Western Province
+  'Kandy', 'Matale', 'Nuwara Eliya',           // Central
+  'Galle', 'Matara', 'Hambantota',             // Southern
+  'Jaffna', 'Kilinochchi', 'Mannar',           // Northern
+  'Ampara', 'Batticaloa', 'Trincomalee',       // Eastern
+  'Kurunegala', 'Puttalam',                    // North Western
+  'Anuradhapura', 'Polonnaruwa',               // North Central
+  'Badulla', 'Monaragala',                     // Uva
+  'Ratnapura', 'Kegalle',                      // Sabaragamuwa
+]
+
+// Packages that require Western Province
+const WESTERN_ONLY = ['longterm']
+
+/* ─────────────────────────────────────────────
+   CATEGORIES & SUB-SERVICES
 ───────────────────────────────────────────── */
 
 const CATEGORIES = [
-  {
-    id: 'residential',
-    label: 'Residential',
-    icon: '🏠',
-    desc: 'Homes, villas & apartments',
-  },
-  {
-    id: 'corporate',
-    label: 'Corporate',
-    icon: '🏢',
-    desc: 'Offices, shops & facilities',
-  },
+  { id: 'residential', label: 'Residential', icon: '🏠', desc: 'Homes, villas & apartments' },
+  { id: 'corporate',   label: 'Corporate',   icon: '🏢', desc: 'Offices, shops & facilities' },
 ]
 
 const SUB_SERVICES = {
   residential: [
-    { id: 'customized', label: 'Customized Cleaning Package', icon: '🧹' },
-    { id: 'longterm',   label: 'Long Term Cleaning Agreement', icon: '🗓️' },
-    { id: 'premium',    label: 'Pro Session / Premium Deep Cleaning', icon: '✨' },
+    { id: 'customized', label: 'Customized Cleaning Package',        westernOnly: false },
+    { id: 'longterm',   label: 'Long Term Cleaning Agreement',       westernOnly: true  },
+    { id: 'premium',    label: 'Pro Session / Premium Deep Cleaning', westernOnly: false },
   ],
   corporate: [
-    { id: 'customized',   label: 'Customized Cleaning Package', icon: '🧹' },
-    { id: 'longterm',     label: 'Long Term Cleaning Agreement', icon: '🗓️' },
-    { id: 'fullservice',  label: 'Full Service / Premium Deep Cleaning', icon: '✨' },
+    { id: 'customized',  label: 'Customized Cleaning Package',         westernOnly: false },
+    { id: 'longterm',    label: 'Long Term Cleaning Agreement',        westernOnly: true  },
+    { id: 'fullservice', label: 'Full Service / Premium Deep Cleaning', westernOnly: false },
   ],
 }
 
 /* ─────────────────────────────────────────────
-   FORM FIELD DEFINITIONS per combination
+   FORM DEFINITIONS — words from chart only
 ───────────────────────────────────────────── */
 
 const FORMS = {
   'residential-customized': {
-    title: 'Customized Cleaning — Residential',
+    title: 'Customized Cleaning Package — Residential',
     fields: [
-      { key: 'propertyType',  label: 'Property Type',           type: 'select',   options: ['House', 'Apartment', 'Villa', 'Other'] },
-      { key: 'services',      label: 'Services Required',        type: 'checks',   options: ['General Cleaning', 'Kitchen Cleaning', 'Bathroom Cleaning', 'Window Cleaning', 'Floor Scrubbing', 'Sofa / Mattress Cleaning', 'Garden / Outdoor', 'Other'] },
-      { key: 'frequency',     label: 'Cleaning Frequency',       type: 'select',   options: ['One-time', 'Weekly', 'Bi-weekly', 'Monthly'] },
-      { key: 'name',          label: 'Your Name',                type: 'text',     placeholder: 'Full name' },
-      { key: 'address',       label: 'Property Address',         type: 'text',     placeholder: 'No, Street, City' },
-      { key: 'contact',       label: 'Contact Number',           type: 'tel',      placeholder: '07X XXX XXXX' },
+      {
+        key: 'who',
+        label: 'Who / Property Type',
+        type: 'select',
+        options: ['House', 'Apartment', 'Villa', 'Other'],
+      },
+      {
+        key: 'action',
+        label: 'Action / Cleaning Scope',
+        type: 'select',
+        options: ['Interior Only', 'Exterior Only', 'Full Property'],
+      },
+      {
+        key: 'process',
+        label: 'Process / Discovery',
+        type: 'checks',
+        options: [
+          'General Cleaning',
+          'Kitchen Cleaning',
+          'Bathroom Cleaning',
+          'Window Cleaning',
+          'Floor Scrubbing',
+          'Sofa / Mattress Cleaning',
+          'Garden / Outdoor',
+          'Other',
+        ],
+      },
+      { key: 'name',    label: 'Name',    type: 'text', placeholder: 'Full name' },
+      { key: 'address', label: 'Address', type: 'text', placeholder: 'No, Street, City' },
+      { key: 'contact', label: 'Contact', type: 'tel',  placeholder: '07X XXX XXXX' },
     ],
   },
+
   'residential-longterm': {
-    title: 'Long Term Agreement — Residential',
+    title: 'Long Term Cleaning Agreement — Residential',
+    note: 'Apply workforce provision',
     fields: [
-      { key: 'frequency',     label: 'Cleaning Frequency',       type: 'select',   options: ['Weekly', 'Bi-daily'] },
-      { key: 'hoursPerDay',   label: 'Hours Per Day',            type: 'select',   options: ['30–35 hours', '40 hours'] },
-      { key: 'pricingPlan',   label: 'Preferred Pricing Plan',   type: 'select',   options: ['Weekly Rate', 'Monthly Rate'] },
-      { key: 'name',          label: 'Your Name',                type: 'text',     placeholder: 'Full name' },
-      { key: 'address',       label: 'Property Address',         type: 'text',     placeholder: 'No, Street, City' },
-      { key: 'contact',       label: 'Contact Number',           type: 'tel',      placeholder: '07X XXX XXXX' },
+      {
+        key: 'frequency',
+        label: 'Frequency',
+        type: 'select',
+        options: ['Weekly', 'Bi-daily'],
+      },
+      {
+        key: 'maximumHours',
+        label: 'Maximum Hours',
+        type: 'select',
+        options: ['Within 30-35h Daily', '40h Daily'],
+      },
+      {
+        key: 'pricing',
+        label: 'Pricing',
+        type: 'select',
+        options: ['Weekly Rate', 'Monthly Rate'],
+      },
+      { key: 'name',    label: 'Name',    type: 'text', placeholder: 'Full name' },
+      { key: 'address', label: 'Address', type: 'text', placeholder: 'No, Street, City' },
+      { key: 'contact', label: 'Contact', type: 'tel',  placeholder: '07X XXX XXXX' },
     ],
   },
+
   'residential-premium': {
     title: 'Pro Session / Premium Deep Cleaning',
+    note: 'Requires a Disposition',
     fields: [
-      { key: 'name',          label: 'Your Name',                type: 'text',     placeholder: 'Full name' },
-      { key: 'date',          label: 'Preferred Date',           type: 'date' },
-      { key: 'address',       label: 'Property Address',         type: 'text',     placeholder: 'No, Street, City' },
-      { key: 'contact',       label: 'Contact Number',           type: 'tel',      placeholder: '07X XXX XXXX' },
+      { key: 'name',    label: 'Name',    type: 'text', placeholder: 'Full name' },
+      { key: 'date',    label: 'Date',    type: 'date' },
+      { key: 'address', label: 'Address', type: 'text', placeholder: 'No, Street, City' },
+      { key: 'contact', label: 'Contact', type: 'tel',  placeholder: '07X XXX XXXX' },
     ],
   },
+
   'corporate-customized': {
-    title: 'Customized Cleaning — Corporate',
+    title: 'Customized Cleaning Package — Corporate',
     fields: [
-      { key: 'serviceCoverage',  label: 'Service Coverage',          type: 'text',   placeholder: 'e.g. Office floors, washrooms, cafeteria' },
-      { key: 'premises',         label: 'Site Premises Allocations',  type: 'text',   placeholder: 'e.g. 3 floors, 20 rooms' },
-      { key: 'businessHours',    label: 'Business Opening Hours',     type: 'text',   placeholder: 'e.g. 8:00 AM – 6:00 PM' },
-      { key: 'demoSitting',      label: 'Demo Site Visit Required?',  type: 'select', options: ['Yes', 'No'] },
-      { key: 'name',             label: 'Contact Name',               type: 'text',   placeholder: 'Full name' },
-      { key: 'contact',          label: 'Contact Number',             type: 'tel',    placeholder: '07X XXX XXXX' },
+      {
+        key: 'serviceCoverage',
+        label: '1) Service Coverage',
+        type: 'text',
+        placeholder: 'e.g. Office floors, washrooms, cafeteria',
+      },
+      {
+        key: 'sitePremises',
+        label: '2) Site Premises Allocations',
+        type: 'text',
+        placeholder: 'e.g. 3 floors, 20 rooms',
+      },
+      {
+        key: 'businessOpening',
+        label: '3) Site Business Opening',
+        type: 'text',
+        placeholder: 'e.g. Mon–Fri, 8:00 AM – 6:00 PM',
+      },
+      {
+        key: 'demoSitting',
+        label: '4) Demo Sitting',
+        type: 'select',
+        options: ['Yes', 'No'],
+      },
+      { key: 'name',    label: 'Name',    type: 'text', placeholder: 'Full name' },
+      { key: 'contact', label: 'Contact', type: 'tel',  placeholder: '07X XXX XXXX' },
     ],
   },
+
   'corporate-longterm': {
-    title: 'Long Term Agreement — Corporate',
+    title: 'Long Term Cleaning Agreement — Corporate',
+    note: 'Requires a Disposition',
     fields: [
-      { key: 'name',          label: 'Contact Name',             type: 'text',     placeholder: 'Full name' },
-      { key: 'role',          label: 'Your Role / Designation',  type: 'text',     placeholder: 'e.g. Facility Manager' },
-      { key: 'address',       label: 'Site Address',             type: 'text',     placeholder: 'No, Street, City' },
-      { key: 'contact',       label: 'Contact Number',           type: 'tel',      placeholder: '07X XXX XXXX' },
+      { key: 'name',    label: 'Name',    type: 'text', placeholder: 'Full name' },
+      { key: 'role',    label: 'Role',    type: 'text', placeholder: 'e.g. Facility Manager' },
+      { key: 'food',    label: 'Food',    type: 'select', options: ['Provided', 'Not Provided'] },
+      { key: 'address', label: 'Address', type: 'text', placeholder: 'No, Street, City' },
+      { key: 'contact', label: 'Contact', type: 'tel',  placeholder: '07X XXX XXXX' },
     ],
   },
+
   'corporate-fullservice': {
     title: 'Full Service / Premium Deep Cleaning — Corporate',
+    note: 'For works information',
     fields: [
-      { key: 'date',          label: 'Preferred Date',           type: 'date' },
-      { key: 'role',          label: 'Your Role / Designation',  type: 'text',     placeholder: 'e.g. Operations Manager' },
-      { key: 'dayPreference', label: 'Preferred Day',            type: 'select',   options: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday', 'Flexible'] },
-      { key: 'address',       label: 'Site Address',             type: 'text',     placeholder: 'No, Street, City' },
-      { key: 'name',          label: 'Contact Name',             type: 'text',     placeholder: 'Full name' },
-      { key: 'contact',       label: 'Contact Number',           type: 'tel',      placeholder: '07X XXX XXXX' },
+      { key: 'date',    label: 'Date',    type: 'date' },
+      { key: 'role',    label: 'Role',    type: 'text', placeholder: 'e.g. Operations Manager' },
+      {
+        key: 'day',
+        label: 'Day',
+        type: 'select',
+        options: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday', 'Flexible'],
+      },
+      { key: 'address', label: 'Address', type: 'text', placeholder: 'No, Street, City' },
+      { key: 'name',    label: 'Name',    type: 'text', placeholder: 'Full name' },
+      { key: 'contact', label: 'Contact', type: 'tel',  placeholder: '07X XXX XXXX' },
     ],
   },
 }
@@ -107,7 +192,7 @@ const FORMS = {
    WHATSAPP MESSAGE BUILDER
 ───────────────────────────────────────────── */
 
-function buildWhatsAppMessage(category, subService, formData, formDef) {
+function buildWhatsAppMessage(category, subService, district, formData, formDef) {
   const catLabel = category === 'residential' ? 'Residential' : 'Corporate'
   const subLabel = SUB_SERVICES[category].find(s => s.id === subService)?.label || subService
 
@@ -116,8 +201,11 @@ function buildWhatsAppMessage(category, subService, formData, formDef) {
     ``,
     `*Category:* ${catLabel}`,
     `*Service:* ${subLabel}`,
+    `*Location / District:* ${district}`,
     ``,
   ]
+
+  if (formDef.note) lines.push(`_${formDef.note}_`, ``)
 
   formDef.fields.forEach(field => {
     const val = formData[field.key]
@@ -139,19 +227,36 @@ function buildWhatsAppMessage(category, subService, formData, formDef) {
 ───────────────────────────────────────────── */
 
 export default function Hero() {
-  const [step, setStep]               = useState('category')
-  const [category, setCategory]       = useState(null)
-  const [subService, setSubService]   = useState(null)
-  const [formData, setFormData]       = useState({})
+  const [step, setStep]             = useState('category')   // category | location | subservice | form | done
+  const [category, setCategory]     = useState(null)
+  const [district, setDistrict]     = useState('')
+  const [subService, setSubService] = useState(null)
+  const [formData, setFormData]     = useState({})
+
+  const isWestern = WESTERN_DISTRICTS.includes(district)
 
   const formKey = category && subService ? `${category}-${subService}` : null
   const formDef = formKey ? FORMS[formKey] : null
 
-  const selectCategory   = (id) => { setCategory(id); setStep('subservice') }
-  const selectSubService = (id) => { setSubService(id); setFormData({}); setStep('form') }
+  /* helpers */
+  const selectCategory = (id) => { setCategory(id); setStep('location') }
+
+  const confirmLocation = () => {
+    if (!district) return
+    setStep('subservice')
+  }
+
+  const selectSubService = (sub) => {
+    if (sub.westernOnly && !isWestern) return  // blocked
+    setSubService(sub.id)
+    setFormData({})
+    setStep('form')
+  }
+
   const goBack = () => {
-    if (step === 'subservice') { setCategory(null); setStep('category') }
-    if (step === 'form')       { setSubService(null); setStep('subservice') }
+    if (step === 'location')    { setCategory(null); setDistrict(''); setStep('category') }
+    if (step === 'subservice')  { setDistrict(''); setStep('location') }
+    if (step === 'form')        { setSubService(null); setStep('subservice') }
   }
 
   const handleField = (key, value) =>
@@ -167,18 +272,24 @@ export default function Hero() {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    const msg = buildWhatsAppMessage(category, subService, formData, formDef)
+    const msg = buildWhatsAppMessage(category, subService, district, formData, formDef)
     window.open(`https://wa.me/94704906565?text=${msg}`, '_blank')
     setStep('done')
   }
 
   const reset = () => {
-    setStep('category'); setCategory(null); setSubService(null); setFormData({})
+    setStep('category')
+    setCategory(null)
+    setDistrict('')
+    setSubService(null)
+    setFormData({})
   }
 
-  const stepIndex  = { category: 0, subservice: 1, form: 2, done: 3 }[step]
-  const stepLabels = ['Type', 'Service', 'Details', 'Done']
+  /* progress */
+  const stepIndex  = { category: 0, location: 1, subservice: 2, form: 3, done: 4 }[step]
+  const stepLabels = ['Type', 'Location', 'Service', 'Details', 'Done']
 
+  /* ─── RENDER ─── */
   return (
     <section
       id="home"
@@ -243,23 +354,24 @@ export default function Hero() {
           <div className="lg:col-span-5" id="quote-card">
             <div className="bg-white rounded-[2rem] p-6 sm:p-7 shadow-2xl border border-slate-100 text-slate-900">
 
-              {/* Progress Dots */}
-              <div className="flex items-center gap-2 mb-5">
-                {stepLabels.map((label, i) => (
-                  <div key={label} className="flex items-center gap-1.5 flex-1">
-                    <div className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${i <= stepIndex ? 'bg-sky-600' : 'bg-slate-200'}`} />
-                  </div>
+              {/* Progress bar */}
+              <div className="flex items-center gap-1.5 mb-5">
+                {stepLabels.map((_, i) => (
+                  <div
+                    key={i}
+                    className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${i <= stepIndex ? 'bg-sky-600' : 'bg-slate-200'}`}
+                  />
                 ))}
               </div>
 
-              {/* Back */}
-              {(step === 'subservice' || step === 'form') && (
+              {/* Back button */}
+              {(step === 'location' || step === 'subservice' || step === 'form') && (
                 <button onClick={goBack} className="flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-sky-600 mb-3 cursor-pointer transition-colors">
                   <ChevronLeft className="w-4 h-4" /> Back
                 </button>
               )}
 
-              {/* ── Step 1: Category ── */}
+              {/* ── STEP 1: Category ── */}
               {step === 'category' && (
                 <>
                   <h3 className="text-xl font-extrabold text-slate-900 mb-1">Book Your Service</h3>
@@ -280,35 +392,115 @@ export default function Hero() {
                 </>
               )}
 
-              {/* ── Step 2: Sub-service ── */}
+              {/* ── STEP 2: Location ── */}
+              {step === 'location' && (
+                <>
+                  <h3 className="text-xl font-extrabold text-slate-900 mb-1">Your Location</h3>
+                  <p className="text-xs text-slate-500 mb-4">Select your district so we can confirm service availability</p>
+
+                  <div className="mb-4">
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                      <MapPin className="inline w-3.5 h-3.5 mr-1 text-sky-600" />
+                      District
+                    </label>
+                    <select
+                      value={district}
+                      onChange={e => setDistrict(e.target.value)}
+                      className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 bg-slate-50"
+                    >
+                      <option value="">— Select District —</option>
+                      <optgroup label="Western Province">
+                        {['Colombo', 'Gampaha', 'Kalutara'].map(d => (
+                          <option key={d} value={d}>{d}</option>
+                        ))}
+                      </optgroup>
+                      <optgroup label="Other Districts">
+                        {ALL_DISTRICTS.filter(d => !WESTERN_DISTRICTS.includes(d)).map(d => (
+                          <option key={d} value={d}>{d}</option>
+                        ))}
+                      </optgroup>
+                    </select>
+                  </div>
+
+                  {/* Notice if outside Western Province */}
+                  {district && !isWestern && (
+                    <div className="flex items-start gap-2.5 p-3 bg-amber-50 border border-amber-200 rounded-xl mb-4">
+                      <AlertCircle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+                      <p className="text-xs text-amber-800 leading-snug">
+                        <span className="font-bold">Note:</span> Long Term Cleaning Agreement packages are only available in the Western Province (Colombo, Gampaha, Kalutara).
+                      </p>
+                    </div>
+                  )}
+
+                  {district && isWestern && (
+                    <div className="flex items-start gap-2.5 p-3 bg-emerald-50 border border-emerald-200 rounded-xl mb-4">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
+                      <p className="text-xs text-emerald-800 leading-snug">
+                        All packages are available in <span className="font-bold">{district}</span>.
+                      </p>
+                    </div>
+                  )}
+
+                  <button
+                    onClick={confirmLocation}
+                    disabled={!district}
+                    className="w-full py-3 bg-sky-600 hover:bg-sky-500 disabled:bg-slate-200 disabled:text-slate-400 text-white font-extrabold rounded-2xl transition-all cursor-pointer disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    Continue
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </>
+              )}
+
+              {/* ── STEP 3: Sub-service ── */}
               {step === 'subservice' && category && (
                 <>
-                  <h3 className="text-xl font-extrabold text-slate-900 mb-1">Select Service Type</h3>
+                  <h3 className="text-xl font-extrabold text-slate-900 mb-1">Select Service</h3>
                   <p className="text-xs text-slate-500 mb-5">
-                    {category === 'residential' ? 'Residential' : 'Corporate'} packages
+                    {category === 'residential' ? 'Residential' : 'Corporate'} · {district}
                   </p>
                   <div className="flex flex-col gap-3">
-                    {SUB_SERVICES[category].map(sub => (
-                      <button
-                        key={sub.id}
-                        onClick={() => selectSubService(sub.id)}
-                        className="flex items-center gap-4 p-4 rounded-2xl border-2 border-slate-200 hover:border-sky-500 hover:bg-sky-50 transition-all cursor-pointer text-left group"
-                      >
-                        <span className="text-2xl">{sub.icon}</span>
-                        <span className="text-sm font-bold text-slate-800 group-hover:text-sky-700 leading-snug">{sub.label}</span>
-                        <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-sky-500 ml-auto shrink-0" />
-                      </button>
-                    ))}
+                    {SUB_SERVICES[category].map(sub => {
+                      const blocked = sub.westernOnly && !isWestern
+                      return (
+                        <button
+                          key={sub.id}
+                          onClick={() => selectSubService(sub)}
+                          disabled={blocked}
+                          className={`flex items-start gap-3 p-4 rounded-2xl border-2 transition-all text-left group ${
+                            blocked
+                              ? 'border-slate-100 bg-slate-50 cursor-not-allowed opacity-50'
+                              : 'border-slate-200 hover:border-sky-500 hover:bg-sky-50 cursor-pointer'
+                          }`}
+                        >
+                          <div className="flex-1">
+                            <div className={`text-sm font-bold leading-snug ${blocked ? 'text-slate-400' : 'text-slate-800 group-hover:text-sky-700'}`}>
+                              {sub.label}
+                            </div>
+                            {sub.westernOnly && (
+                              <div className="text-[10px] mt-0.5 font-semibold text-amber-600">
+                                Western Province only
+                              </div>
+                            )}
+                          </div>
+                          {!blocked && <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-sky-500 mt-0.5 shrink-0" />}
+                        </button>
+                      )
+                    })}
                   </div>
                 </>
               )}
 
-              {/* ── Step 3: Form ── */}
+              {/* ── STEP 4: Form ── */}
               {step === 'form' && formDef && (
                 <>
-                  <h3 className="text-base font-extrabold text-slate-900 mb-1 leading-snug">{formDef.title}</h3>
-                  <p className="text-xs text-slate-500 mb-4">Fill in your details and we'll contact you via WhatsApp</p>
-                  <form onSubmit={handleSubmit} className="space-y-3 max-h-[380px] overflow-y-auto pr-1">
+                  <h3 className="text-base font-extrabold text-slate-900 mb-0.5 leading-snug">{formDef.title}</h3>
+                  {formDef.note && (
+                    <p className="text-xs font-semibold text-sky-700 mb-1">{formDef.note}</p>
+                  )}
+                  <p className="text-[11px] text-slate-400 mb-4">District: {district} · Send via WhatsApp</p>
+
+                  <form onSubmit={handleSubmit} className="space-y-3 max-h-[370px] overflow-y-auto pr-1">
                     {formDef.fields.map(field => (
                       <div key={field.key}>
                         <label className="block text-xs font-bold text-slate-700 mb-1">{field.label}</label>
@@ -377,13 +569,13 @@ export default function Hero() {
                 </>
               )}
 
-              {/* ── Step 4: Done ── */}
+              {/* ── STEP 5: Done ── */}
               {step === 'done' && (
                 <div className="text-center py-4">
                   <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto mb-3" />
                   <h3 className="text-lg font-extrabold text-slate-900 mb-2">Request Sent!</h3>
                   <p className="text-sm text-slate-500 mb-5 leading-relaxed">
-                    Your quote request has been sent via WhatsApp. We'll get back to you shortly.
+                    Your quote request has been sent via WhatsApp.<br />We'll get back to you shortly.
                   </p>
                   <button
                     onClick={reset}
