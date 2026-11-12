@@ -159,7 +159,6 @@ const FORMS = {
     note: 'Available island-wide. Free site inspection required before final quotation.',
     fields: [
       ...CORPORATE_IDENTITY_FIELDS,
-      { key: 'food',    label: 'Food',       type: 'select', options: ['Provided', 'Not Provided'] },
       { key: 'address', label: 'Address',    type: 'text',   placeholder: 'No, Street, City' },
       { key: 'contact', label: 'Contact No', type: 'tel',    placeholder: '07X XXX XXXX' },
     ],
