@@ -96,14 +96,36 @@ const FORMS = {
     note: 'Only Western Province',
     hasContactStep: true,
     fields: [
-      { key: 'date',          label: 'Date',            type: 'date' },
-      { key: 'cleanersCount', label: 'Cleaners Count',  type: 'counter' },
+      { key: 'date',            label: 'Cleaning Date',                  type: 'date' },
+      { key: 'startTime',       label: 'Start / Arrival Time',           type: 'time' },
+      {
+        key: 'duration',
+        label: 'Booking Duration',
+        type: 'select',
+        options: ['2 Hours', '3 Hours', '4 Hours', '5 Hours', '6 Hours', 'Full Day (8 Hours)'],
+      },
+      { key: 'cleanersCount',   label: 'Cleaners Count',                 type: 'counter' },
+      {
+        key: 'propertyDetails',
+        label: 'Property Size / Details',
+        type: 'text',
+        placeholder: 'e.g. 3 Bedrooms, 2 Baths (~2,000 sq ft)',
+        fullWidth: true,
+      },
       {
         key: 'equipment',
         label: 'Equipment Needed',
         type: 'checks',
         options: EQUIPMENT_OPTIONS,
         fullWidth: true,
+      },
+      {
+        key: 'instructions',
+        label: 'Specific Instructions (Scope of Work)',
+        type: 'textarea',
+        placeholder: 'Special requests, areas requiring extra attention, or specific cleaning tasks...',
+        fullWidth: true,
+        optional: true,
       },
     ],
     contactFields: [
@@ -149,14 +171,36 @@ const FORMS = {
     note: 'Only Western Province',
     hasContactStep: true,
     fields: [
-      { key: 'date',          label: 'Date',            type: 'date' },
-      { key: 'cleanersCount', label: 'Cleaners Count',  type: 'counter' },
+      { key: 'date',            label: 'Cleaning Date',                  type: 'date' },
+      { key: 'startTime',       label: 'Start / Arrival Time',           type: 'time' },
+      {
+        key: 'duration',
+        label: 'Booking Duration',
+        type: 'select',
+        options: ['2 Hours', '3 Hours', '4 Hours', '5 Hours', '6 Hours', 'Full Day (8 Hours)'],
+      },
+      { key: 'cleanersCount',   label: 'Cleaners Count',                 type: 'counter' },
+      {
+        key: 'propertyDetails',
+        label: 'Premises Size / Details',
+        type: 'text',
+        placeholder: 'e.g. 2 Floors, 15 Cabins (~3,500 sq ft)',
+        fullWidth: true,
+      },
       {
         key: 'equipment',
         label: 'Equipment Needed',
         type: 'checks',
         options: EQUIPMENT_OPTIONS,
         fullWidth: true,
+      },
+      {
+        key: 'instructions',
+        label: 'Specific Instructions (Scope of Work)',
+        type: 'textarea',
+        placeholder: 'Special requests, commercial areas, or custom scope of work...',
+        fullWidth: true,
+        optional: true,
       },
     ],
     contactFields: [
@@ -282,10 +326,13 @@ export default function Hero() {
     : ['Type', 'Location', 'Service', 'Details', 'Done']
 
   const renderField = (field) => {
-    const spanFull = field.fullWidth || ['radio', 'radio-conditional', 'pricing-display', 'checks'].includes(field.type)
+    const spanFull = field.fullWidth || ['radio', 'radio-conditional', 'pricing-display', 'checks', 'textarea'].includes(field.type)
     return (
       <div key={field.key} className={spanFull ? 'sm:col-span-2' : ''}>
-        <label className="block text-xs font-bold text-slate-700 mb-1">{field.label}</label>
+        <label className="block text-xs font-bold text-slate-700 mb-1">
+          {field.label}
+          {field.optional && <span className="text-[10px] text-slate-400 font-normal ml-1">(Optional)</span>}
+        </label>
 
         {(field.type === 'text' || field.type === 'tel') && (
           <input
@@ -293,7 +340,7 @@ export default function Hero() {
             placeholder={field.placeholder}
             value={formData[field.key] || ''}
             onChange={e => handleField(field.key, e.target.value)}
-            required
+            required={!field.optional}
             className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30 bg-slate-50 placeholder-slate-400"
           />
         )}
@@ -303,8 +350,19 @@ export default function Hero() {
             type={field.type}
             value={formData[field.key] || ''}
             onChange={e => handleField(field.key, e.target.value)}
-            required
+            required={!field.optional}
             className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30 bg-slate-50"
+          />
+        )}
+
+        {field.type === 'textarea' && (
+          <textarea
+            rows={3}
+            placeholder={field.placeholder}
+            value={formData[field.key] || ''}
+            onChange={e => handleField(field.key, e.target.value)}
+            required={!field.optional}
+            className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30 bg-slate-50 placeholder-slate-400 resize-none"
           />
         )}
 
@@ -395,7 +453,7 @@ export default function Hero() {
           <select
             value={formData[field.key] || ''}
             onChange={e => handleField(field.key, e.target.value)}
-            required
+            required={!field.optional}
             className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30 bg-slate-50"
           >
             <option value="">— Select —</option>
@@ -729,8 +787,13 @@ export default function Hero() {
                   )}
 
                   {formData.cleanersCount && (
-                    <div className="px-3.5 py-2 rounded-xl bg-sky-50 border border-sky-200 text-xs text-sky-900 font-semibold mb-3 flex items-center justify-between">
-                      <span>{formData.cleanersCount} Cleaner{formData.cleanersCount > 1 ? 's' : ''} {formData.date ? `· ${formData.date}` : ''}</span>
+                    <div className="px-3.5 py-2 rounded-xl bg-sky-50 border border-sky-200 text-xs text-sky-900 font-semibold mb-3 flex items-center justify-between flex-wrap gap-1">
+                      <span>
+                        {formData.cleanersCount} Cleaner{formData.cleanersCount > 1 ? 's' : ''}
+                        {formData.duration ? ` · ${formData.duration}` : ''}
+                        {formData.date ? ` · ${formData.date}` : ''}
+                        {formData.startTime ? ` (${formData.startTime})` : ''}
+                      </span>
                       {formData.equipment?.length > 0 && <span className="text-[11px] text-slate-600">{formData.equipment.length} equipment items</span>}
                     </div>
                   )}
@@ -771,8 +834,22 @@ export default function Hero() {
                     {formData.address && <div><span className="font-bold">Address:</span> {formData.address}</div>}
                     <div><span className="font-bold">District:</span> {district}</div>
                     {formDef && <div><span className="font-bold">Package:</span> {formDef.title}</div>}
+                    {formData.date && (
+                      <div>
+                        <span className="font-bold">{formDef?.isInspection ? 'Inspection Date:' : 'Cleaning Date:'}</span> {formData.date}
+                        {formData.startTime ? ` at ${formData.startTime}` : formData.time ? ` at ${formData.time}` : ''}
+                      </div>
+                    )}
+                    {formData.duration && <div><span className="font-bold">Duration:</span> {formData.duration}</div>}
                     {formData.cleanersCount && <div><span className="font-bold">Cleaners:</span> {formData.cleanersCount}</div>}
+                    {formData.propertyDetails && <div><span className="font-bold">{category === 'corporate' ? 'Premises Details:' : 'Property Details:'}</span> {formData.propertyDetails}</div>}
                     {formData.equipment?.length > 0 && <div><span className="font-bold">Equipment:</span> {formData.equipment.join(', ')}</div>}
+                    {formData.instructions && (
+                      <div className="pt-1 border-t border-slate-200 mt-1">
+                        <span className="font-bold">Scope / Special Requests:</span>
+                        <p className="italic text-slate-600 whitespace-pre-wrap">{formData.instructions}</p>
+                      </div>
+                    )}
                     {formDef?.isLongTerm && getLongtermPrice(formData.frequency, formData.times, formData.distance) !== null && (
                       <div className="pt-1 text-sky-700 font-extrabold">
                         Estimated Rate: LKR {getLongtermPrice(formData.frequency, formData.times, formData.distance).toLocaleString()}
