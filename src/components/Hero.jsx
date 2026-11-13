@@ -79,6 +79,78 @@ function getLongtermPrice(frequency, times, distance) {
 }
 
 /* ─────────────────────────────────────────────
+   CUSTOMIZED PACKAGE PRICING
+   * 1 Professional Cleaner, Chemicals & Equipment: 8,500
+   * Additional cleaners charge: 3,000 each
+   * Additional equipment charges: 2,000 each
+   * Transportation charges:
+     - Bike: within 20km = 500 | beyond 20km = 1000
+     - Three-wheeler: within 20km = 1000 | beyond 20km = 1500
+     - Lorry (heavy equipment): within 20km = 2000 | beyond 20km = 2500
+   * 15% profit margin added to total cost
+───────────────────────────────────────────── */
+
+const HEAVY_EQUIPMENT = [
+  'Scrubbing Machine',
+  'High-Pressure Cleaning Machine',
+  'Grass Cutting Machine',
+]
+
+const TRANSPORT_RATES = {
+  bike: { 'Within 20 KM': 500, 'Beyond 20 KM': 1000 },
+  threewheeler: { 'Within 20 KM': 1000, 'Beyond 20 KM': 1500 },
+  lorry: { 'Within 20 KM': 2000, 'Beyond 20 KM': 2500 },
+}
+
+function getCustomizedEstimate(cleanersCount = 1, equipment = [], distance = null) {
+  const count = Math.max(1, parseInt(cleanersCount, 10) || 1)
+  const baseCleanerCharge = 8500
+  const additionalCleanersCharge = (count - 1) * 3000
+  const cleanerTotal = baseCleanerCharge + additionalCleanersCharge
+
+  const eqList = Array.isArray(equipment) ? equipment : []
+  const eqCount = eqList.length
+  const equipmentTotal = eqCount * 2000
+
+  // Heavy equipment requires a lorry; medium equipment or 2+ cleaners requires a three-wheeler; else bike
+  const hasHeavy = eqList.some(item => HEAVY_EQUIPMENT.includes(item))
+  let vehicleKey = 'bike'
+  let vehicleName = 'Motorbike'
+  if (hasHeavy) {
+    vehicleKey = 'lorry'
+    vehicleName = 'Lorry (Heavy Equipment)'
+  } else if (eqCount > 0 || count >= 2) {
+    vehicleKey = 'threewheeler'
+    vehicleName = 'Three-Wheeler'
+  }
+
+  const transportRate = distance ? (TRANSPORT_RATES[vehicleKey]?.[distance] ?? null) : null
+
+  // Subtotal of costs
+  const costSubtotal = cleanerTotal + equipmentTotal + (transportRate || 0)
+  // 15% profit margin
+  const margin = Math.round(costSubtotal * 0.15)
+  const total = costSubtotal + margin
+
+  return {
+    cleanersCount: count,
+    baseCleanerCharge,
+    additionalCleanersCharge,
+    cleanerTotal,
+    eqCount,
+    equipmentTotal,
+    vehicleKey,
+    vehicleName,
+    distance,
+    transportRate,
+    costSubtotal,
+    margin,
+    total,
+    isComplete: Boolean(distance),
+  }
+}
+
+/* ─────────────────────────────────────────────
    FORM DEFINITIONS — words from chart only
 ───────────────────────────────────────────── */
 
@@ -117,6 +189,19 @@ const FORMS = {
         label: 'Equipment Needed',
         type: 'checks',
         options: EQUIPMENT_OPTIONS,
+        fullWidth: true,
+      },
+      {
+        key: 'distance',
+        label: 'Distance (from Colombo center / service hub)',
+        type: 'radio',
+        options: ['Within 20 KM', 'Beyond 20 KM'],
+        fullWidth: true,
+      },
+      {
+        key: '_pricing',
+        label: 'ESTIMATED PRICE',
+        type: 'customized-pricing-display',
         fullWidth: true,
       },
       {
@@ -192,6 +277,19 @@ const FORMS = {
         label: 'Equipment Needed',
         type: 'checks',
         options: EQUIPMENT_OPTIONS,
+        fullWidth: true,
+      },
+      {
+        key: 'distance',
+        label: 'Distance (from Colombo center / service hub)',
+        type: 'radio',
+        options: ['Within 20 KM', 'Beyond 20 KM'],
+        fullWidth: true,
+      },
+      {
+        key: '_pricing',
+        label: 'ESTIMATED PRICE',
+        type: 'customized-pricing-display',
         fullWidth: true,
       },
       {
@@ -326,7 +424,7 @@ export default function Hero() {
     : ['Type', 'Location', 'Service', 'Details', 'Done']
 
   const renderField = (field) => {
-    const spanFull = field.fullWidth || ['radio', 'radio-conditional', 'pricing-display', 'checks', 'textarea'].includes(field.type)
+    const spanFull = field.fullWidth || ['radio', 'radio-conditional', 'pricing-display', 'customized-pricing-display', 'checks', 'textarea'].includes(field.type)
     return (
       <div key={field.key} className={spanFull ? 'sm:col-span-2' : ''}>
         <label className="block text-xs font-bold text-slate-700 mb-1">
@@ -445,6 +543,79 @@ export default function Hero() {
               <span className="text-sm font-extrabold text-sky-700">
                 {price !== null ? `LKR ${price.toLocaleString()}` : 'Select options above'}
               </span>
+            </div>
+          )
+        })()}
+
+        {field.type === 'customized-pricing-display' && (() => {
+          const est = getCustomizedEstimate(formData.cleanersCount, formData.equipment, formData.distance)
+          return (
+            <div className="rounded-2xl border border-sky-200 bg-gradient-to-br from-sky-50 via-white to-emerald-50/50 p-3.5 shadow-sm space-y-2.5">
+              <div className="flex items-center justify-between gap-2">
+                <div>
+                  <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-sky-100 text-[10px] font-extrabold text-sky-800 uppercase tracking-wider mb-0.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <span>Estimated Quotation</span>
+                  </div>
+                  <p className="text-[11px] text-slate-500">
+                    {est.isComplete
+                      ? 'Live calculation with 15% margin'
+                      : 'Select Distance above to include exact transportation'}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <div className="text-xl sm:text-2xl font-black text-sky-800 leading-none">
+                    LKR {est.total.toLocaleString()}
+                  </div>
+                  {!est.isComplete && (
+                    <span className="text-[10px] text-amber-600 font-bold">
+                      + Transport pending
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Itemized breakdown */}
+              <div className="pt-2 border-t border-sky-100 text-[11px] space-y-1 text-slate-600">
+                <div className="flex justify-between items-center">
+                  <span>1 Cleaner, Chemicals &amp; Equipment</span>
+                  <span className="font-semibold text-slate-800">LKR 8,500</span>
+                </div>
+
+                {est.additionalCleanersCharge > 0 && (
+                  <div className="flex justify-between items-center text-sky-900">
+                    <span>Additional Cleaners ({est.cleanersCount - 1} × LKR 3,000)</span>
+                    <span className="font-semibold">+ LKR {est.additionalCleanersCharge.toLocaleString()}</span>
+                  </div>
+                )}
+
+                {est.equipmentTotal > 0 && (
+                  <div className="flex justify-between items-center text-sky-900">
+                    <span>
+                      Additional Equipment ({est.eqCount} {est.eqCount === 1 ? 'item' : 'items'} × LKR 2,000)
+                    </span>
+                    <span className="font-semibold">+ LKR {est.equipmentTotal.toLocaleString()}</span>
+                  </div>
+                )}
+
+                <div className="flex justify-between items-center">
+                  <span>
+                    Transportation ({est.vehicleName})
+                  </span>
+                  <span className="font-semibold">
+                    {est.transportRate !== null ? (
+                      <span className="text-slate-800">+ LKR {est.transportRate.toLocaleString()}</span>
+                    ) : (
+                      <span className="text-amber-600 font-bold text-[10px]">Select distance above</span>
+                    )}
+                  </span>
+                </div>
+
+                <div className="flex justify-between items-center pt-1 border-t border-slate-100 text-[10px] text-slate-500">
+                  <span>15% Service Margin</span>
+                  <span className="font-medium text-slate-700">+ LKR {est.margin.toLocaleString()}</span>
+                </div>
+              </div>
             </div>
           )
         })()}
@@ -786,17 +957,31 @@ export default function Hero() {
                     </div>
                   )}
 
-                  {formData.cleanersCount && (
-                    <div className="px-3.5 py-2 rounded-xl bg-sky-50 border border-sky-200 text-xs text-sky-900 font-semibold mb-3 flex items-center justify-between flex-wrap gap-1">
-                      <span>
-                        {formData.cleanersCount} Cleaner{formData.cleanersCount > 1 ? 's' : ''}
-                        {formData.duration ? ` · ${formData.duration}` : ''}
-                        {formData.date ? ` · ${formData.date}` : ''}
-                        {formData.startTime ? ` (${formData.startTime})` : ''}
-                      </span>
-                      {formData.equipment?.length > 0 && <span className="text-[11px] text-slate-600">{formData.equipment.length} equipment items</span>}
-                    </div>
-                  )}
+                  {!formDef.isLongTerm && formData.cleanersCount && (() => {
+                    const est = getCustomizedEstimate(formData.cleanersCount, formData.equipment, formData.distance)
+                    return (
+                      <div className="px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-sky-50 to-emerald-50/70 border border-sky-200 text-xs text-sky-950 font-semibold mb-3 space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span>
+                            {formData.cleanersCount} Cleaner{formData.cleanersCount > 1 ? 's' : ''}
+                            {formData.duration ? ` · ${formData.duration}` : ''}
+                            {formData.date ? ` · ${formData.date}` : ''}
+                            {formData.startTime ? ` (${formData.startTime})` : ''}
+                          </span>
+                          <span className="font-extrabold text-sky-800 text-sm">
+                            LKR {est.total.toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between text-[11px] text-slate-600">
+                          <span>
+                            {est.vehicleName} {formData.distance ? `· ${formData.distance}` : ''}
+                            {formData.equipment?.length > 0 ? ` · ${formData.equipment.length} equipment items` : ''}
+                          </span>
+                          <span className="text-[10px] text-slate-500 font-medium">Incl. 15% margin</span>
+                        </div>
+                      </div>
+                    )
+                  })()}
 
                   <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                     {formDef.contactFields.map(renderField)}
@@ -855,6 +1040,23 @@ export default function Hero() {
                         Estimated Rate: LKR {getLongtermPrice(formData.frequency, formData.times, formData.distance).toLocaleString()}
                       </div>
                     )}
+                    {!formDef?.isLongTerm && !formDef?.isInspection && formData.cleanersCount && (() => {
+                      const est = getCustomizedEstimate(formData.cleanersCount, formData.equipment, formData.distance)
+                      return (
+                        <div className="pt-2 border-t border-slate-200 space-y-1">
+                          <div className="flex items-center justify-between text-sky-800 font-black text-sm">
+                            <span>Estimated Total:</span>
+                            <span>LKR {est.total.toLocaleString()}</span>
+                          </div>
+                          <div className="text-[11px] text-slate-500 space-y-0.5">
+                            <div>• Cleaners ({est.cleanersCount}): LKR {est.cleanerTotal.toLocaleString()}</div>
+                            {est.equipmentTotal > 0 && <div>• Additional Equipment ({est.eqCount} items): LKR {est.equipmentTotal.toLocaleString()}</div>}
+                            {est.transportRate !== null && <div>• Transport ({est.vehicleName} · {formData.distance}): LKR {est.transportRate.toLocaleString()}</div>}
+                            <div>• 15% Service Margin: LKR {est.margin.toLocaleString()}</div>
+                          </div>
+                        </div>
+                      )
+                    })()}
                   </div>
                   <button
                     onClick={reset}
