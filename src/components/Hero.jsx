@@ -94,12 +94,10 @@ const FORMS = {
   'residential-customized': {
     title: 'Customized Cleaning Package — Residential',
     note: 'Only Western Province',
+    hasContactStep: true,
     fields: [
-      { key: 'name',          label: 'Name',            type: 'text',    placeholder: 'Full name' },
-      { key: 'contact',       label: 'Contact No',      type: 'tel',     placeholder: '07X XXX XXXX' },
       { key: 'date',          label: 'Date',            type: 'date' },
       { key: 'cleanersCount', label: 'Cleaners Count',  type: 'counter' },
-      { key: 'address',       label: 'Address',         type: 'text',    placeholder: 'No, Street, City', fullWidth: true },
       {
         key: 'equipment',
         label: 'Equipment Needed',
@@ -108,20 +106,28 @@ const FORMS = {
         fullWidth: true,
       },
     ],
+    contactFields: [
+      { key: 'name',    label: 'Name',       type: 'text', placeholder: 'Full name' },
+      { key: 'contact', label: 'Contact No', type: 'tel',  placeholder: '07X XXX XXXX' },
+      { key: 'address', label: 'Address',    type: 'text', placeholder: 'No, Street, City', fullWidth: true },
+    ],
   },
 
   'residential-longterm': {
     title: 'Long-Term Cleaning Agreement',
     note: 'Only Western Province',
     isLongTerm: true,
+    hasContactStep: true,
     fields: [
       { key: 'frequency', label: 'Frequency',        type: 'radio',             options: ['Weekly', 'Monthly'], fullWidth: true },
       { key: 'times',     label: 'How many times ?', type: 'radio-conditional', dependsOn: 'frequency', conditionalOptions: LONGTERM_TIMES, fullWidth: true },
       { key: 'distance',  label: 'Distance',         type: 'radio',             options: ['Within 20 KM', 'Beyond 20 KM'], fullWidth: true },
       { key: '_pricing',  label: 'PRICING',          type: 'pricing-display',   fullWidth: true },
-      { key: 'name',      label: 'Name',             type: 'text',              placeholder: 'Full name' },
-      { key: 'contact',   label: 'Contact',          type: 'tel',               placeholder: '07X XXX XXXX' },
-      { key: 'address',   label: 'Address',          type: 'text',              placeholder: 'No, Street, City', fullWidth: true },
+    ],
+    contactFields: [
+      { key: 'name',    label: 'Name',    type: 'text', placeholder: 'Full name' },
+      { key: 'contact', label: 'Contact', type: 'tel',  placeholder: '07X XXX XXXX' },
+      { key: 'address', label: 'Address', type: 'text', placeholder: 'No, Street, City', fullWidth: true },
     ],
   },
 
@@ -141,12 +147,10 @@ const FORMS = {
   'corporate-customized': {
     title: 'Customized Cleaning Package — Corporate',
     note: 'Only Western Province',
+    hasContactStep: true,
     fields: [
-      ...CORPORATE_IDENTITY_FIELDS,
-      { key: 'contact',       label: 'Contact No',      type: 'tel',     placeholder: '07X XXX XXXX' },
       { key: 'date',          label: 'Date',            type: 'date' },
       { key: 'cleanersCount', label: 'Cleaners Count',  type: 'counter' },
-      { key: 'address',       label: 'Address',         type: 'text',    placeholder: 'No, Street, City', fullWidth: true },
       {
         key: 'equipment',
         label: 'Equipment Needed',
@@ -154,6 +158,11 @@ const FORMS = {
         options: EQUIPMENT_OPTIONS,
         fullWidth: true,
       },
+    ],
+    contactFields: [
+      ...CORPORATE_IDENTITY_FIELDS,
+      { key: 'contact', label: 'Contact No', type: 'tel',  placeholder: '07X XXX XXXX' },
+      { key: 'address', label: 'Address',    type: 'text', placeholder: 'No, Street, City', fullWidth: true },
     ],
   },
 
@@ -224,9 +233,10 @@ export default function Hero() {
   }
 
   const goBack = () => {
-    if (step === 'location')    { setDistrict(''); setStep('category') }
-    if (step === 'subservice')  { setDistrict(''); setStep('location') }
-    if (step === 'form')        { setSubService(null); setStep('subservice') }
+    if (step === 'contact')         { setStep('form') }
+    else if (step === 'form')       { setSubService(null); setStep('subservice') }
+    else if (step === 'subservice') { setDistrict(''); setStep('location') }
+    else if (step === 'location')   { setCategory(null); setStep('category') }
   }
 
   const handleField = (key, value) =>
@@ -257,8 +267,180 @@ export default function Hero() {
   }
 
   /* progress */
-  const stepIndex  = { category: 0, location: 1, subservice: 2, form: 3, done: 4 }[step]
-  const stepLabels = ['Type', 'Location', 'Service', 'Details', 'Done']
+  const hasContact = Boolean(formDef?.hasContactStep)
+  const stepIndex  = {
+    category: 0,
+    location: 1,
+    subservice: 2,
+    form: 3,
+    contact: 4,
+    done: hasContact ? 5 : 4,
+  }[step] ?? 0
+
+  const stepLabels = hasContact
+    ? ['Type', 'Location', 'Service', 'Details', 'Contact', 'Done']
+    : ['Type', 'Location', 'Service', 'Details', 'Done']
+
+  const renderField = (field) => {
+    const spanFull = field.fullWidth || ['radio', 'radio-conditional', 'pricing-display', 'checks'].includes(field.type)
+    return (
+      <div key={field.key} className={spanFull ? 'sm:col-span-2' : ''}>
+        <label className="block text-xs font-bold text-slate-700 mb-1">{field.label}</label>
+
+        {(field.type === 'text' || field.type === 'tel') && (
+          <input
+            type={field.type}
+            placeholder={field.placeholder}
+            value={formData[field.key] || ''}
+            onChange={e => handleField(field.key, e.target.value)}
+            required
+            className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30 bg-slate-50 placeholder-slate-400"
+          />
+        )}
+
+        {(field.type === 'date' || field.type === 'time') && (
+          <input
+            type={field.type}
+            value={formData[field.key] || ''}
+            onChange={e => handleField(field.key, e.target.value)}
+            required
+            className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30 bg-slate-50"
+          />
+        )}
+
+        {field.type === 'radio' && (
+          <div className="grid grid-cols-2 gap-2">
+            {field.options.map(opt => {
+              const selected = formData[field.key] === opt
+              return (
+                <label
+                  key={opt}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-bold cursor-pointer transition-all ${
+                    selected
+                      ? 'border-sky-600 bg-sky-50 text-sky-900'
+                      : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name={field.key}
+                    value={opt}
+                    checked={selected}
+                    onChange={() => handleField(field.key, opt)}
+                    required
+                    className="accent-sky-600 shrink-0"
+                  />
+                  <span>{opt}</span>
+                </label>
+              )
+            })}
+          </div>
+        )}
+
+        {field.type === 'radio-conditional' && (() => {
+          const depVal = formData[field.dependsOn]
+          const opts = depVal ? (field.conditionalOptions[depVal] || []) : []
+          if (!depVal) {
+            return (
+              <p className="text-xs text-slate-400 italic px-3 py-2 bg-slate-50 rounded-xl border border-slate-200">
+                Select Frequency first
+              </p>
+            )
+          }
+          return (
+            <div className={`grid gap-2 ${opts.length === 3 ? 'grid-cols-3' : 'grid-cols-2'}`}>
+              {opts.map(opt => {
+                const selected = formData[field.key] === opt
+                return (
+                  <label
+                    key={opt}
+                    className={`flex items-center gap-1.5 px-2.5 py-2 rounded-xl border text-xs font-bold cursor-pointer transition-all ${
+                      selected
+                        ? 'border-sky-600 bg-sky-50 text-sky-900'
+                        : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name={field.key}
+                      value={opt}
+                      checked={selected}
+                      onChange={() => handleField(field.key, opt)}
+                      required
+                      className="accent-sky-600 shrink-0"
+                    />
+                    <span>{opt}</span>
+                  </label>
+                )
+              })}
+            </div>
+          )
+        })()}
+
+        {field.type === 'pricing-display' && (() => {
+          const price = getLongtermPrice(formData.frequency, formData.times, formData.distance)
+          return (
+            <div className="px-3.5 py-2.5 rounded-xl border border-sky-200 bg-sky-50/70 flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-600">
+                {price !== null ? `${formData.frequency} · ${formData.times} · ${formData.distance}` : 'Estimated Rate'}
+              </span>
+              <span className="text-sm font-extrabold text-sky-700">
+                {price !== null ? `LKR ${price.toLocaleString()}` : 'Select options above'}
+              </span>
+            </div>
+          )
+        })()}
+
+        {field.type === 'select' && (
+          <select
+            value={formData[field.key] || ''}
+            onChange={e => handleField(field.key, e.target.value)}
+            required
+            className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30 bg-slate-50"
+          >
+            <option value="">— Select —</option>
+            {field.options.map(opt => (
+              <option key={opt} value={opt}>{opt}</option>
+            ))}
+          </select>
+        )}
+
+        {field.type === 'checks' && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+            {field.options.map(opt => (
+              <label key={opt} className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-slate-50 rounded-lg px-2 py-1 transition-colors">
+                <input
+                  type="checkbox"
+                  checked={Array.isArray(formData[field.key]) && formData[field.key].includes(opt)}
+                  onChange={e => handleCheck(field.key, opt, e.target.checked)}
+                  className="rounded accent-sky-600 shrink-0"
+                />
+                {opt}
+              </label>
+            ))}
+          </div>
+        )}
+
+        {field.type === 'counter' && (
+          <div className="flex items-center gap-3 p-1.5 bg-slate-50 rounded-xl border border-slate-200">
+            <button
+              type="button"
+              onClick={() => handleField(field.key, Math.max(1, (formData[field.key] || 1) - 1))}
+              className="w-8 h-8 rounded-lg bg-white border border-slate-300 text-slate-800 font-extrabold hover:bg-slate-100 flex items-center justify-center transition-colors cursor-pointer"
+            >−</button>
+            <span className="flex-1 text-center text-base font-extrabold text-slate-900">
+              {formData[field.key] || 1}
+            </span>
+            <button
+              type="button"
+              onClick={() => handleField(field.key, (formData[field.key] || 1) + 1)}
+              className="w-8 h-8 rounded-lg bg-white border border-slate-300 text-slate-800 font-extrabold hover:bg-slate-100 flex items-center justify-center transition-colors cursor-pointer"
+            >+</button>
+          </div>
+        )}
+      </div>
+    )
+  }
 
   /* ─── RENDER ─── */
   return (
@@ -336,7 +518,7 @@ export default function Hero() {
               </div>
 
               {/* Back button */}
-              {(step === 'location' || step === 'subservice' || step === 'form') && (
+              {(step === 'location' || step === 'subservice' || step === 'form' || step === 'contact') && (
                 <button onClick={goBack} className="flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-sky-600 mb-3 cursor-pointer transition-colors">
                   <ChevronLeft className="w-4 h-4" /> Back
                 </button>
@@ -507,173 +689,60 @@ export default function Hero() {
                     <p className="text-xs font-semibold text-sky-700 mb-3">{formDef.note}</p>
                   ) : null}
 
-                  <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                    {formDef.fields.map(field => {
-                      const spanFull = field.fullWidth || ['radio', 'radio-conditional', 'pricing-display', 'checks'].includes(field.type)
-                      return (
-                      <div key={field.key} className={spanFull ? 'sm:col-span-2' : ''}>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">{field.label}</label>
-
-                        {(field.type === 'text' || field.type === 'tel') && (
-                          <input
-                            type={field.type}
-                            placeholder={field.placeholder}
-                            value={formData[field.key] || ''}
-                            onChange={e => handleField(field.key, e.target.value)}
-                            required
-                            className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30 bg-slate-50 placeholder-slate-400"
-                          />
-                        )}
-
-                        {(field.type === 'date' || field.type === 'time') && (
-                          <input
-                            type={field.type}
-                            value={formData[field.key] || ''}
-                            onChange={e => handleField(field.key, e.target.value)}
-                            required
-                            className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30 bg-slate-50"
-                          />
-                        )}
-
-                        {field.type === 'radio' && (
-                          <div className="grid grid-cols-2 gap-2">
-                            {field.options.map(opt => {
-                              const selected = formData[field.key] === opt
-                              return (
-                                <label
-                                  key={opt}
-                                  className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-bold cursor-pointer transition-all ${
-                                    selected
-                                      ? 'border-sky-600 bg-sky-50 text-sky-900'
-                                      : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300'
-                                  }`}
-                                >
-                                  <input
-                                    type="radio"
-                                    name={field.key}
-                                    value={opt}
-                                    checked={selected}
-                                    onChange={() => handleField(field.key, opt)}
-                                    required
-                                    className="accent-sky-600 shrink-0"
-                                  />
-                                  <span>{opt}</span>
-                                </label>
-                              )
-                            })}
-                          </div>
-                        )}
-
-                        {field.type === 'radio-conditional' && (() => {
-                          const depVal = formData[field.dependsOn]
-                          const opts = depVal ? (field.conditionalOptions[depVal] || []) : []
-                          if (!depVal) {
-                            return (
-                              <p className="text-xs text-slate-400 italic px-3 py-2 bg-slate-50 rounded-xl border border-slate-200">
-                                Select Frequency first
-                              </p>
-                            )
-                          }
-                          return (
-                            <div className={`grid gap-2 ${opts.length === 3 ? 'grid-cols-3' : 'grid-cols-2'}`}>
-                              {opts.map(opt => {
-                                const selected = formData[field.key] === opt
-                                return (
-                                  <label
-                                    key={opt}
-                                    className={`flex items-center gap-1.5 px-2.5 py-2 rounded-xl border text-xs font-bold cursor-pointer transition-all ${
-                                      selected
-                                        ? 'border-sky-600 bg-sky-50 text-sky-900'
-                                        : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300'
-                                    }`}
-                                  >
-                                    <input
-                                      type="radio"
-                                      name={field.key}
-                                      value={opt}
-                                      checked={selected}
-                                      onChange={() => handleField(field.key, opt)}
-                                      required
-                                      className="accent-sky-600 shrink-0"
-                                    />
-                                    <span>{opt}</span>
-                                  </label>
-                                )
-                              })}
-                            </div>
-                          )
-                        })()}
-
-                        {field.type === 'pricing-display' && (() => {
-                          const price = getLongtermPrice(formData.frequency, formData.times, formData.distance)
-                          return (
-                            <div className="px-3.5 py-2.5 rounded-xl border border-sky-200 bg-sky-50/70 flex items-center justify-between">
-                              <span className="text-xs font-bold text-slate-600">
-                                {price !== null ? `${formData.frequency} · ${formData.times} · ${formData.distance}` : 'Estimated Rate'}
-                              </span>
-                              <span className="text-sm font-extrabold text-sky-700">
-                                {price !== null ? `LKR ${price.toLocaleString()}` : 'Select options above'}
-                              </span>
-                            </div>
-                          )
-                        })()}
-
-                        {field.type === 'select' && (
-                          <select
-                            value={formData[field.key] || ''}
-                            onChange={e => handleField(field.key, e.target.value)}
-                            required
-                            className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30 bg-slate-50"
-                          >
-                            <option value="">— Select —</option>
-                            {field.options.map(opt => (
-                              <option key={opt} value={opt}>{opt}</option>
-                            ))}
-                          </select>
-                        )}
-
-                        {field.type === 'checks' && (
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                            {field.options.map(opt => (
-                              <label key={opt} className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-slate-50 rounded-lg px-2 py-1 transition-colors">
-                                <input
-                                  type="checkbox"
-                                  checked={Array.isArray(formData[field.key]) && formData[field.key].includes(opt)}
-                                  onChange={e => handleCheck(field.key, opt, e.target.checked)}
-                                  className="rounded accent-sky-600 shrink-0"
-                                />
-                                {opt}
-                              </label>
-                            ))}
-                          </div>
-                        )}
-
-                        {field.type === 'counter' && (
-                          <div className="flex items-center gap-3 p-1.5 bg-slate-50 rounded-xl border border-slate-200">
-                            <button
-                              type="button"
-                              onClick={() => handleField(field.key, Math.max(1, (formData[field.key] || 1) - 1))}
-                              className="w-8 h-8 rounded-lg bg-white border border-slate-300 text-slate-800 font-extrabold hover:bg-slate-100 flex items-center justify-center transition-colors cursor-pointer"
-                            >−</button>
-                            <span className="flex-1 text-center text-base font-extrabold text-slate-900">
-                              {formData[field.key] || 1}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => handleField(field.key, (formData[field.key] || 1) + 1)}
-                              className="w-8 h-8 rounded-lg bg-white border border-slate-300 text-slate-800 font-extrabold hover:bg-slate-100 flex items-center justify-center transition-colors cursor-pointer"
-                            >+</button>
-                          </div>
-                        )}
-                      </div>
-                      )
-                    })}
+                  <form
+                    onSubmit={formDef.hasContactStep ? (e) => { e.preventDefault(); setStep('contact') } : handleSubmit}
+                    className="grid grid-cols-1 sm:grid-cols-2 gap-3.5"
+                  >
+                    {formDef.fields.map(renderField)}
 
                     <button
                       type="submit"
                       className="sm:col-span-2 w-full py-3.5 px-4 bg-sky-600 hover:bg-sky-500 text-white font-extrabold rounded-2xl shadow-lg shadow-sky-600/30 hover:shadow-sky-500/50 transition-all flex items-center justify-center gap-2 cursor-pointer hover:-translate-y-0.5 active:translate-y-0 mt-1"
                     >
-                      <span>{formDef.isInspection ? 'Request an Inspection' : 'Get a Quote'}</span>
+                      <span>
+                        {formDef.hasContactStep
+                          ? 'Next: Contact Details'
+                          : formDef.isInspection
+                          ? 'Request an Inspection'
+                          : 'Get a Quote'}
+                      </span>
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  </form>
+                </>
+              )}
+
+              {/* ── STEP: Contact Details (when hasContactStep) ── */}
+              {step === 'contact' && formDef && formDef.contactFields && (
+                <>
+                  <h3 className="text-base font-extrabold text-slate-900 mb-0.5 leading-snug">
+                    {category === 'corporate' ? 'Company & Contact Details' : 'Contact Details'}
+                  </h3>
+                  <p className="text-[11px] text-slate-400 mb-3">{formDef.title} · District: {district}</p>
+
+                  {/* Selection Summary Pill */}
+                  {formDef.isLongTerm && getLongtermPrice(formData.frequency, formData.times, formData.distance) !== null && (
+                    <div className="px-3.5 py-2 rounded-xl bg-sky-50 border border-sky-200 text-xs text-sky-900 font-bold mb-3 flex items-center justify-between">
+                      <span>{formData.frequency} · {formData.times} · {formData.distance}</span>
+                      <span className="font-extrabold text-sky-700">LKR {getLongtermPrice(formData.frequency, formData.times, formData.distance).toLocaleString()}</span>
+                    </div>
+                  )}
+
+                  {formData.cleanersCount && (
+                    <div className="px-3.5 py-2 rounded-xl bg-sky-50 border border-sky-200 text-xs text-sky-900 font-semibold mb-3 flex items-center justify-between">
+                      <span>{formData.cleanersCount} Cleaner{formData.cleanersCount > 1 ? 's' : ''} {formData.date ? `· ${formData.date}` : ''}</span>
+                      {formData.equipment?.length > 0 && <span className="text-[11px] text-slate-600">{formData.equipment.length} equipment items</span>}
+                    </div>
+                  )}
+
+                  <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    {formDef.contactFields.map(renderField)}
+
+                    <button
+                      type="submit"
+                      className="sm:col-span-2 w-full py-3.5 px-4 bg-sky-600 hover:bg-sky-500 text-white font-extrabold rounded-2xl shadow-lg shadow-sky-600/30 hover:shadow-sky-500/50 transition-all flex items-center justify-center gap-2 cursor-pointer hover:-translate-y-0.5 active:translate-y-0 mt-1"
+                    >
+                      <span>Get a Quote</span>
                       <ArrowRight className="w-4 h-4" />
                     </button>
                   </form>
@@ -697,8 +766,13 @@ export default function Hero() {
                     <div><span className="font-bold">Type:</span> {category === 'residential' ? 'Residential' : 'Corporate'}</div>
                     {formData.companyName && <div><span className="font-bold">Company:</span> {formData.companyName}</div>}
                     {formData.role && <div><span className="font-bold">Authorized Person:</span> {formData.name} ({formData.role})</div>}
+                    {!formData.role && formData.name && <div><span className="font-bold">Name:</span> {formData.name}</div>}
+                    {formData.contact && <div><span className="font-bold">Contact:</span> {formData.contact}</div>}
+                    {formData.address && <div><span className="font-bold">Address:</span> {formData.address}</div>}
                     <div><span className="font-bold">District:</span> {district}</div>
                     {formDef && <div><span className="font-bold">Package:</span> {formDef.title}</div>}
+                    {formData.cleanersCount && <div><span className="font-bold">Cleaners:</span> {formData.cleanersCount}</div>}
+                    {formData.equipment?.length > 0 && <div><span className="font-bold">Equipment:</span> {formData.equipment.join(', ')}</div>}
                     {formDef?.isLongTerm && getLongtermPrice(formData.frequency, formData.times, formData.distance) !== null && (
                       <div className="pt-1 text-sky-700 font-extrabold">
                         Estimated Rate: LKR {getLongtermPrice(formData.frequency, formData.times, formData.distance).toLocaleString()}
