@@ -37,19 +37,19 @@ const EQUIPMENT_OPTIONS = [
 
 const CATEGORIES = [
   { id: 'residential', label: 'Residential', icon: '🏠', desc: 'Homes, villas & apartments' },
-  { id: 'corporate',   label: 'Corporate',   icon: '🏢', desc: 'Offices, shops & facilities' },
+  { id: 'corporate', label: 'Corporate', icon: '🏢', desc: 'Offices, shops & facilities' },
 ]
 
 const SUB_SERVICES = {
   residential: [
-    { id: 'customized', label: 'Customized Cleaning Package',          westernOnly: true,  requiresInspection: false },
-    { id: 'longterm',   label: 'Long Term Cleaning Agreement',         westernOnly: true,  requiresInspection: false },
-    { id: 'premium',    label: 'Full House / Premises Deep Cleaning',  westernOnly: false, requiresInspection: true  },
+    { id: 'customized', label: 'Customized Cleaning Package', westernOnly: true, requiresInspection: false },
+    { id: 'longterm', label: 'Long Term Cleaning Agreement', westernOnly: true, requiresInspection: false },
+    { id: 'premium', label: 'Full House / Premises Deep Cleaning', westernOnly: false, requiresInspection: true },
   ],
   corporate: [
-    { id: 'customized',  label: 'Customized Cleaning Package',          westernOnly: true,  requiresInspection: false },
-    { id: 'longterm',    label: 'Long Term Cleaning Agreement',         westernOnly: false, requiresInspection: true  },
-    { id: 'fullservice', label: 'Full Service / Premium Deep Cleaning', westernOnly: false, requiresInspection: true  },
+    { id: 'customized', label: 'Customized Cleaning Package', westernOnly: true, requiresInspection: false },
+    { id: 'longterm', label: 'Long Term Cleaning Agreement', westernOnly: false, requiresInspection: true },
+    { id: 'fullservice', label: 'Full Service / Premium Deep Cleaning', westernOnly: false, requiresInspection: true },
   ],
 }
 
@@ -69,7 +69,7 @@ const LONGTERM_PRICING = {
 }
 
 const LONGTERM_TIMES = {
-  Weekly:  ['Once (1x)', 'Twice (2x)', 'Three Times (3x)'],
+  Weekly: ['Once (1x)', 'Twice (2x)', 'Three Times (3x)'],
   Monthly: ['Once (1x)', 'Twice (2x)'],
 }
 
@@ -93,7 +93,6 @@ function getLongtermPrice(frequency, times, distance) {
 const HEAVY_EQUIPMENT = [
   'Scrubbing Machine',
   'High-Pressure Cleaning Machine',
-  'Grass Cutting Machine',
 ]
 
 const TRANSPORT_RATES = {
@@ -157,9 +156,9 @@ function getCustomizedEstimate(cleanersCount = 1, equipment = [], distance = nul
 const INSPECTION_NOTE = 'Site inspection required before final quotation.'
 
 const CORPORATE_IDENTITY_FIELDS = [
-  { key: 'companyName', label: 'Company Name',           type: 'text', placeholder: 'Company name' },
-  { key: 'name',        label: 'Authorized Person Name', type: 'text', placeholder: 'Full name' },
-  { key: 'role',        label: 'Role',                   type: 'text', placeholder: 'e.g. Facility Manager' },
+  { key: 'companyName', label: 'Company Name', type: 'text', placeholder: 'Company name' },
+  { key: 'name', label: 'Authorized Person Name', type: 'text', placeholder: 'Full name' },
+  { key: 'role', label: 'Role', type: 'text', placeholder: 'e.g. Facility Manager' },
 ]
 
 const FORMS = {
@@ -168,15 +167,15 @@ const FORMS = {
     note: 'Only Western Province',
     hasContactStep: true,
     fields: [
-      { key: 'date',            label: 'Cleaning Date',                  type: 'date' },
-      { key: 'startTime',       label: 'Start / Arrival Time',           type: 'time' },
+      { key: 'date', label: 'Cleaning Date', type: 'date' },
+      { key: 'startTime', label: 'Start / Arrival Time', type: 'time' },
       {
         key: 'duration',
         label: 'Booking Duration',
         type: 'select',
         options: ['2 Hours', '3 Hours', '4 Hours', '5 Hours', '6 Hours', 'Full Day (8 Hours)'],
       },
-      { key: 'cleanersCount',   label: 'Cleaners Count',                 type: 'counter' },
+      { key: 'cleanersCount', label: 'Cleaners Count', type: 'counter' },
       {
         key: 'propertyDetails',
         label: 'Property Size / Details',
@@ -214,9 +213,9 @@ const FORMS = {
       },
     ],
     contactFields: [
-      { key: 'name',    label: 'Name',       type: 'text', placeholder: 'Full name' },
-      { key: 'contact', label: 'Contact No', type: 'tel',  placeholder: '07X XXX XXXX' },
-      { key: 'address', label: 'Address',    type: 'text', placeholder: 'No, Street, City', fullWidth: true },
+      { key: 'name', label: 'Name', type: 'text', placeholder: 'Full name' },
+      { key: 'contact', label: 'Contact No', type: 'tel', placeholder: '07X XXX XXXX' },
+      { key: 'address', label: 'Address', type: 'text', placeholder: 'No, Street, City', fullWidth: true },
     ],
   },
 
@@ -226,14 +225,14 @@ const FORMS = {
     isLongTerm: true,
     hasContactStep: true,
     fields: [
-      { key: 'frequency', label: 'Frequency',        type: 'radio',             options: ['Weekly', 'Monthly'], fullWidth: true },
-      { key: 'times',     label: 'How many times ?', type: 'radio-conditional', dependsOn: 'frequency', conditionalOptions: LONGTERM_TIMES, fullWidth: true },
-      { key: 'distance',  label: 'Distance',         type: 'radio',             options: ['Within 20 KM', 'Beyond 20 KM'], fullWidth: true },
-      { key: '_pricing',  label: 'PRICING',          type: 'pricing-display',   fullWidth: true },
+      { key: 'frequency', label: 'Frequency', type: 'radio', options: ['Weekly', 'Monthly'], fullWidth: true },
+      { key: 'times', label: 'How many times ?', type: 'radio-conditional', dependsOn: 'frequency', conditionalOptions: LONGTERM_TIMES, fullWidth: true },
+      { key: 'distance', label: 'Distance', type: 'radio', options: ['Within 20 KM', 'Beyond 20 KM'], fullWidth: true },
+      { key: '_pricing', label: 'PRICING', type: 'pricing-display', fullWidth: true },
     ],
     contactFields: [
-      { key: 'name',    label: 'Name',    type: 'text', placeholder: 'Full name' },
-      { key: 'contact', label: 'Contact', type: 'tel',  placeholder: '07X XXX XXXX' },
+      { key: 'name', label: 'Name', type: 'text', placeholder: 'Full name' },
+      { key: 'contact', label: 'Contact', type: 'tel', placeholder: '07X XXX XXXX' },
       { key: 'address', label: 'Address', type: 'text', placeholder: 'No, Street, City', fullWidth: true },
     ],
   },
@@ -243,11 +242,11 @@ const FORMS = {
     isInspection: true,
     note: INSPECTION_NOTE,
     fields: [
-      { key: 'name',    label: 'Name',                      type: 'text', placeholder: 'Full name' },
-      { key: 'contact', label: 'Contact No',                type: 'tel',  placeholder: '07X XXX XXXX' },
-      { key: 'date',    label: 'Preferred Inspection Date', type: 'date' },
-      { key: 'time',    label: 'Preferred Inspection Time', type: 'time' },
-      { key: 'address', label: 'Address',                   type: 'text', placeholder: 'No, Street, City', fullWidth: true },
+      { key: 'name', label: 'Name', type: 'text', placeholder: 'Full name' },
+      { key: 'contact', label: 'Contact No', type: 'tel', placeholder: '07X XXX XXXX' },
+      { key: 'date', label: 'Preferred Inspection Date', type: 'date' },
+      { key: 'time', label: 'Preferred Inspection Time', type: 'time' },
+      { key: 'address', label: 'Address', type: 'text', placeholder: 'No, Street, City', fullWidth: true },
     ],
   },
 
@@ -256,15 +255,15 @@ const FORMS = {
     note: 'Only Western Province',
     hasContactStep: true,
     fields: [
-      { key: 'date',            label: 'Cleaning Date',                  type: 'date' },
-      { key: 'startTime',       label: 'Start / Arrival Time',           type: 'time' },
+      { key: 'date', label: 'Cleaning Date', type: 'date' },
+      { key: 'startTime', label: 'Start / Arrival Time', type: 'time' },
       {
         key: 'duration',
         label: 'Booking Duration',
         type: 'select',
         options: ['2 Hours', '3 Hours', '4 Hours', '5 Hours', '6 Hours', 'Full Day (8 Hours)'],
       },
-      { key: 'cleanersCount',   label: 'Cleaners Count',                 type: 'counter' },
+      { key: 'cleanersCount', label: 'Cleaners Count', type: 'counter' },
       {
         key: 'propertyDetails',
         label: 'Premises Size / Details',
@@ -303,8 +302,8 @@ const FORMS = {
     ],
     contactFields: [
       ...CORPORATE_IDENTITY_FIELDS,
-      { key: 'contact', label: 'Contact No', type: 'tel',  placeholder: '07X XXX XXXX' },
-      { key: 'address', label: 'Address',    type: 'text', placeholder: 'No, Street, City', fullWidth: true },
+      { key: 'contact', label: 'Contact No', type: 'tel', placeholder: '07X XXX XXXX' },
+      { key: 'address', label: 'Address', type: 'text', placeholder: 'No, Street, City', fullWidth: true },
     ],
   },
 
@@ -314,8 +313,8 @@ const FORMS = {
     note: INSPECTION_NOTE,
     fields: [
       ...CORPORATE_IDENTITY_FIELDS,
-      { key: 'contact', label: 'Contact No', type: 'tel',  placeholder: '07X XXX XXXX' },
-      { key: 'address', label: 'Address',    type: 'text', placeholder: 'No, Street, City', fullWidth: true },
+      { key: 'contact', label: 'Contact No', type: 'tel', placeholder: '07X XXX XXXX' },
+      { key: 'address', label: 'Address', type: 'text', placeholder: 'No, Street, City', fullWidth: true },
     ],
   },
 
@@ -325,8 +324,8 @@ const FORMS = {
     note: INSPECTION_NOTE,
     fields: [
       ...CORPORATE_IDENTITY_FIELDS,
-      { key: 'contact', label: 'Contact No',                type: 'tel', placeholder: '07X XXX XXXX' },
-      { key: 'date',    label: 'Preferred Inspection Date', type: 'date' },
+      { key: 'contact', label: 'Contact No', type: 'tel', placeholder: '07X XXX XXXX' },
+      { key: 'date', label: 'Preferred Inspection Date', type: 'date' },
       {
         key: 'day',
         label: 'Preferred Day',
@@ -343,11 +342,11 @@ const FORMS = {
 ───────────────────────────────────────────── */
 
 export default function Hero() {
-  const [step, setStep]             = useState('category')   // category | location | subservice | form | done
-  const [category, setCategory]     = useState(null)
-  const [district, setDistrict]     = useState('')
+  const [step, setStep] = useState('category')   // category | location | subservice | form | done
+  const [category, setCategory] = useState(null)
+  const [district, setDistrict] = useState('')
   const [subService, setSubService] = useState(null)
-  const [formData, setFormData]     = useState({})
+  const [formData, setFormData] = useState({})
 
   const isWestern = WESTERN_DISTRICTS.includes(district)
 
@@ -375,10 +374,10 @@ export default function Hero() {
   }
 
   const goBack = () => {
-    if (step === 'contact')         { setStep('form') }
-    else if (step === 'form')       { setSubService(null); setStep('subservice') }
+    if (step === 'contact') { setStep('form') }
+    else if (step === 'form') { setSubService(null); setStep('subservice') }
     else if (step === 'subservice') { setDistrict(''); setStep('location') }
-    else if (step === 'location')   { setCategory(null); setStep('category') }
+    else if (step === 'location') { setCategory(null); setStep('category') }
   }
 
   const handleField = (key, value) =>
@@ -410,7 +409,7 @@ export default function Hero() {
 
   /* progress */
   const hasContact = Boolean(formDef?.hasContactStep)
-  const stepIndex  = {
+  const stepIndex = {
     category: 0,
     location: 1,
     subservice: 2,
@@ -427,10 +426,12 @@ export default function Hero() {
     const spanFull = field.fullWidth || ['radio', 'radio-conditional', 'pricing-display', 'customized-pricing-display', 'checks', 'textarea'].includes(field.type)
     return (
       <div key={field.key} className={spanFull ? 'sm:col-span-2' : ''}>
-        <label className="block text-xs font-bold text-slate-700 mb-1">
-          {field.label}
-          {field.optional && <span className="text-[10px] text-slate-400 font-normal ml-1">(Optional)</span>}
-        </label>
+        {field.type !== 'pricing-display' && field.type !== 'customized-pricing-display' && (
+          <label className="block text-xs font-bold text-slate-700 mb-1">
+            {field.label}
+            {field.optional && <span className="text-[10px] text-slate-400 font-normal ml-1">(Optional)</span>}
+          </label>
+        )}
 
         {(field.type === 'text' || field.type === 'tel') && (
           <input
@@ -471,11 +472,10 @@ export default function Hero() {
               return (
                 <label
                   key={opt}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-bold cursor-pointer transition-all ${
-                    selected
+                  className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-bold cursor-pointer transition-all ${selected
                       ? 'border-sky-600 bg-sky-50 text-sky-900'
                       : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300'
-                  }`}
+                    }`}
                 >
                   <input
                     type="radio"
@@ -510,11 +510,10 @@ export default function Hero() {
                 return (
                   <label
                     key={opt}
-                    className={`flex items-center gap-1.5 px-2.5 py-2 rounded-xl border text-xs font-bold cursor-pointer transition-all ${
-                      selected
+                    className={`flex items-center gap-1.5 px-2.5 py-2 rounded-xl border text-xs font-bold cursor-pointer transition-all ${selected
                         ? 'border-sky-600 bg-sky-50 text-sky-900'
                         : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300'
-                    }`}
+                      }`}
                   >
                     <input
                       type="radio"
@@ -535,14 +534,66 @@ export default function Hero() {
 
         {field.type === 'pricing-display' && (() => {
           const price = getLongtermPrice(formData.frequency, formData.times, formData.distance)
+          const isComplete = price !== null
+
+          if (!isComplete) {
+            return (
+              <div className="rounded-2xl border-2 border-dashed border-sky-200 bg-sky-50/50 p-4 text-center">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-100 text-[11px] font-extrabold text-sky-800 uppercase tracking-wider mb-1.5">
+                  <span>Agreement Pricing</span>
+                </div>
+                <p className="text-xs text-slate-500 font-medium max-w-xs mx-auto">
+                  {!formData.frequency
+                    ? 'Select your preferred Frequency above to view pricing'
+                    : !formData.times
+                    ? 'Select how many times per week/month'
+                    : 'Select your Distance to calculate the final agreement rate'}
+                </p>
+              </div>
+            )
+          }
+
           return (
-            <div className="px-3.5 py-2.5 rounded-xl border border-sky-200 bg-sky-50/70 flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-600">
-                {price !== null ? `${formData.frequency} · ${formData.times} · ${formData.distance}` : 'Estimated Rate'}
-              </span>
-              <span className="text-sm font-extrabold text-sky-700">
-                {price !== null ? `LKR ${price.toLocaleString()}` : 'Select options above'}
-              </span>
+            <div className="rounded-2xl border-2 border-sky-400/50 bg-gradient-to-br from-sky-50 via-white to-emerald-50/50 p-4 shadow-sm space-y-3">
+              <div className="flex items-center justify-between gap-3">
+                <div className="space-y-1">
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 text-[10px] font-extrabold text-emerald-800 uppercase tracking-wider">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <span>Estimated Agreement Rate</span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-700 font-bold pt-0.5">
+                    <span className="px-2 py-0.5 rounded-md bg-white border border-slate-200 text-slate-700 shadow-2xs">
+                      {formData.frequency}
+                    </span>
+                    <span className="text-slate-300">·</span>
+                    <span className="px-2 py-0.5 rounded-md bg-white border border-slate-200 text-slate-700 shadow-2xs">
+                      {formData.times}
+                    </span>
+                    <span className="text-slate-300">·</span>
+                    <span className="px-2 py-0.5 rounded-md bg-white border border-slate-200 text-slate-700 shadow-2xs">
+                      {formData.distance}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="text-right shrink-0">
+                  <div className="text-2xl sm:text-3xl font-black text-sky-800 tracking-tight leading-none">
+                    <span className="text-xs font-bold text-sky-600 mr-1">LKR</span>
+                    {price.toLocaleString()}
+                  </div>
+                  <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mt-1">
+                    {formData.frequency === 'Weekly' ? 'Monthly Contract Rate' : 'Per Month'}
+                  </span>
+                </div>
+              </div>
+
+              <div className="pt-2.5 border-t border-sky-100/80 flex items-center justify-between text-[11px] text-slate-500">
+                <span className="flex items-center gap-1 text-emerald-700 font-semibold">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  All cleaning chemicals &amp; equipment included
+                </span>
+                <span className="text-slate-400 font-medium">Western Province</span>
+              </div>
             </div>
           )
         })()}
@@ -550,70 +601,83 @@ export default function Hero() {
         {field.type === 'customized-pricing-display' && (() => {
           const est = getCustomizedEstimate(formData.cleanersCount, formData.equipment, formData.distance)
           return (
-            <div className="rounded-2xl border border-sky-200 bg-gradient-to-br from-sky-50 via-white to-emerald-50/50 p-3.5 shadow-sm space-y-2.5">
-              <div className="flex items-center justify-between gap-2">
-                <div>
-                  <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-sky-100 text-[10px] font-extrabold text-sky-800 uppercase tracking-wider mb-0.5">
+            <div className="rounded-2xl border-2 border-sky-400/50 bg-gradient-to-br from-sky-50 via-white to-emerald-50/50 p-4 shadow-sm space-y-3">
+              <div className="flex items-center justify-between gap-3">
+                <div className="space-y-1">
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 text-[10px] font-extrabold text-emerald-800 uppercase tracking-wider">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     <span>Estimated Quotation</span>
                   </div>
-                  <p className="text-[11px] text-slate-500">
+                  <p className="text-xs text-slate-500 font-medium">
                     {est.isComplete
-                      ? 'Live calculation with 15% margin'
+                      ? 'Live calculation based on your selections'
                       : 'Select Distance above to include exact transportation'}
                   </p>
                 </div>
-                <div className="text-right">
-                  <div className="text-xl sm:text-2xl font-black text-sky-800 leading-none">
-                    LKR {est.total.toLocaleString()}
+                <div className="text-right shrink-0">
+                  <div className="text-2xl sm:text-3xl font-black text-sky-800 tracking-tight leading-none">
+                    <span className="text-xs font-bold text-sky-600 mr-1">LKR</span>
+                    {est.total.toLocaleString()}
                   </div>
-                  {!est.isComplete && (
-                    <span className="text-[10px] text-amber-600 font-bold">
+                  {!est.isComplete ? (
+                    <span className="inline-block mt-1 px-1.5 py-0.5 rounded bg-amber-100 text-[10px] text-amber-800 font-bold">
                       + Transport pending
+                    </span>
+                  ) : (
+                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mt-1">
+                      Includes 15% margin
                     </span>
                   )}
                 </div>
               </div>
 
               {/* Itemized breakdown */}
-              <div className="pt-2 border-t border-sky-100 text-[11px] space-y-1 text-slate-600">
+              <div className="pt-2.5 border-t border-sky-100/80 text-xs space-y-1.5 text-slate-600">
                 <div className="flex justify-between items-center">
-                  <span>1 Cleaner, Chemicals &amp; Equipment</span>
-                  <span className="font-semibold text-slate-800">LKR 8,500</span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-sky-500 shrink-0" />
+                    <span>1 Professional Cleaner, Chemicals &amp; Equipment</span>
+                  </span>
+                  <span className="font-bold text-slate-800">LKR 8,500</span>
                 </div>
 
                 {est.additionalCleanersCharge > 0 && (
                   <div className="flex justify-between items-center text-sky-900">
-                    <span>Additional Cleaners ({est.cleanersCount - 1} × LKR 3,000)</span>
-                    <span className="font-semibold">+ LKR {est.additionalCleanersCharge.toLocaleString()}</span>
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-sky-500 shrink-0" />
+                      <span>Additional Cleaners ({est.cleanersCount - 1} × LKR 3,000)</span>
+                    </span>
+                    <span className="font-bold">+ LKR {est.additionalCleanersCharge.toLocaleString()}</span>
                   </div>
                 )}
 
                 {est.equipmentTotal > 0 && (
                   <div className="flex justify-between items-center text-sky-900">
-                    <span>
-                      Additional Equipment ({est.eqCount} {est.eqCount === 1 ? 'item' : 'items'} × LKR 2,000)
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-sky-500 shrink-0" />
+                      <span>Additional Equipment ({est.eqCount} {est.eqCount === 1 ? 'item' : 'items'} × LKR 2,000)</span>
                     </span>
-                    <span className="font-semibold">+ LKR {est.equipmentTotal.toLocaleString()}</span>
+                    <span className="font-bold">+ LKR {est.equipmentTotal.toLocaleString()}</span>
                   </div>
                 )}
 
                 <div className="flex justify-between items-center">
-                  <span>
-                    Transportation ({est.vehicleName})
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-sky-500 shrink-0" />
+                    <span>Transportation ({est.vehicleName})</span>
                   </span>
-                  <span className="font-semibold">
+                  <span className="font-bold">
                     {est.transportRate !== null ? (
                       <span className="text-slate-800">+ LKR {est.transportRate.toLocaleString()}</span>
                     ) : (
-                      <span className="text-amber-600 font-bold text-[10px]">Select distance above</span>
+                      <span className="text-amber-600 font-bold text-[11px]">Select distance above</span>
                     )}
                   </span>
                 </div>
 
-                <div className="flex justify-between items-center pt-1 border-t border-slate-100 text-[10px] text-slate-500">
+                <div className="flex justify-between items-center pt-1.5 border-t border-slate-100 text-[11px] text-slate-500">
                   <span>15% Service Margin</span>
-                  <span className="font-medium text-slate-700">+ LKR {est.margin.toLocaleString()}</span>
+                  <span className="font-semibold text-slate-700">+ LKR {est.margin.toLocaleString()}</span>
                 </div>
               </div>
             </div>
@@ -766,11 +830,10 @@ export default function Hero() {
                           key={cat.id}
                           type="button"
                           onClick={() => selectCategory(cat.id)}
-                          className={`flex flex-col items-center gap-2 p-5 rounded-2xl border-2 transition-all cursor-pointer group ${
-                            active
+                          className={`flex flex-col items-center gap-2 p-5 rounded-2xl border-2 transition-all cursor-pointer group ${active
                               ? 'border-sky-600 bg-sky-50 ring-1 ring-sky-600'
                               : 'border-slate-200 hover:border-sky-500 hover:bg-sky-50'
-                          }`}
+                            }`}
                         >
                           <span className="text-3xl">{cat.icon}</span>
                           <span className={`text-sm font-extrabold ${active ? 'text-sky-900' : 'text-slate-800 group-hover:text-sky-700'}`}>
@@ -871,11 +934,10 @@ export default function Hero() {
                           key={sub.id}
                           onClick={() => selectSubService(sub)}
                           disabled={blocked}
-                          className={`flex items-start gap-3 p-4 rounded-2xl border-2 transition-all text-left group ${
-                            blocked
+                          className={`flex items-start gap-3 p-4 rounded-2xl border-2 transition-all text-left group ${blocked
                               ? 'border-slate-100 bg-slate-50 cursor-not-allowed opacity-50'
                               : 'border-slate-200 hover:border-sky-500 hover:bg-sky-50 cursor-pointer'
-                          }`}
+                            }`}
                         >
                           <div className="flex-1">
                             <div className={`text-sm font-bold leading-snug ${blocked ? 'text-slate-400' : 'text-slate-800 group-hover:text-sky-700'}`}>
@@ -932,8 +994,8 @@ export default function Hero() {
                         {formDef.hasContactStep
                           ? 'Next: Contact Details'
                           : formDef.isInspection
-                          ? 'Request an Inspection'
-                          : 'Get a Quote'}
+                            ? 'Request an Inspection'
+                            : 'Get a Quote'}
                       </span>
                       <ArrowRight className="w-4 h-4" />
                     </button>
