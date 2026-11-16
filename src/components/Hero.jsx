@@ -169,12 +169,6 @@ const FORMS = {
     fields: [
       { key: 'date', label: 'Cleaning Date', type: 'date' },
       { key: 'startTime', label: 'Start / Arrival Time', type: 'time' },
-      {
-        key: 'duration',
-        label: 'Booking Duration',
-        type: 'select',
-        options: ['2 Hours', '3 Hours', '4 Hours', '5 Hours', '6 Hours', 'Full Day (8 Hours)'],
-      },
       { key: 'cleanersCount', label: 'Cleaners Count', type: 'counter' },
       {
         key: 'propertyDetails',
@@ -257,12 +251,6 @@ const FORMS = {
     fields: [
       { key: 'date', label: 'Cleaning Date', type: 'date' },
       { key: 'startTime', label: 'Start / Arrival Time', type: 'time' },
-      {
-        key: 'duration',
-        label: 'Booking Duration',
-        type: 'select',
-        options: ['2 Hours', '3 Hours', '4 Hours', '5 Hours', '6 Hours', 'Full Day (8 Hours)'],
-      },
       { key: 'cleanersCount', label: 'Cleaners Count', type: 'counter' },
       {
         key: 'propertyDetails',
@@ -1026,7 +1014,6 @@ export default function Hero() {
                         <div className="flex items-center justify-between">
                           <span>
                             {formData.cleanersCount} Cleaner{formData.cleanersCount > 1 ? 's' : ''}
-                            {formData.duration ? ` · ${formData.duration}` : ''}
                             {formData.date ? ` · ${formData.date}` : ''}
                             {formData.startTime ? ` (${formData.startTime})` : ''}
                           </span>
@@ -1087,7 +1074,6 @@ export default function Hero() {
                         {formData.startTime ? ` at ${formData.startTime}` : formData.time ? ` at ${formData.time}` : ''}
                       </div>
                     )}
-                    {formData.duration && <div><span className="font-bold">Duration:</span> {formData.duration}</div>}
                     {formData.cleanersCount && <div><span className="font-bold">Cleaners:</span> {formData.cleanersCount}</div>}
                     {formData.propertyDetails && <div><span className="font-bold">{category === 'corporate' ? 'Premises Details:' : 'Property Details:'}</span> {formData.propertyDetails}</div>}
                     {formData.equipment?.length > 0 && <div><span className="font-bold">Equipment:</span> {formData.equipment.join(', ')}</div>}
