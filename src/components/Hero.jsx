@@ -204,7 +204,6 @@ const FORMS = {
     contactFields: [
       { key: 'name', label: 'Name', type: 'text', placeholder: 'Full name' },
       { key: 'contact', label: 'Contact No', type: 'tel', placeholder: '07X XXX XXXX' },
-      { key: 'address', label: 'Address', type: 'text', placeholder: 'No, Street, City', fullWidth: true },
     ],
   },
 
@@ -221,7 +220,6 @@ const FORMS = {
     contactFields: [
       { key: 'name', label: 'Name', type: 'text', placeholder: 'Full name' },
       { key: 'contact', label: 'Contact', type: 'tel', placeholder: '07X XXX XXXX' },
-      { key: 'address', label: 'Address', type: 'text', placeholder: 'No, Street, City', fullWidth: true },
     ],
   },
 
@@ -234,7 +232,6 @@ const FORMS = {
       { key: 'contact', label: 'Contact No', type: 'tel', placeholder: '07X XXX XXXX' },
       { key: 'date', label: 'Preferred Inspection Date', type: 'date' },
       { key: 'time', label: 'Preferred Inspection Time', type: 'time' },
-      { key: 'address', label: 'Address', type: 'text', placeholder: 'No, Street, City', fullWidth: true },
     ],
   },
 
@@ -279,7 +276,6 @@ const FORMS = {
     contactFields: [
       ...CORPORATE_IDENTITY_FIELDS,
       { key: 'contact', label: 'Contact No', type: 'tel', placeholder: '07X XXX XXXX' },
-      { key: 'address', label: 'Address', type: 'text', placeholder: 'No, Street, City', fullWidth: true },
     ],
   },
 
@@ -290,7 +286,6 @@ const FORMS = {
     fields: [
       ...CORPORATE_IDENTITY_FIELDS,
       { key: 'contact', label: 'Contact No', type: 'tel', placeholder: '07X XXX XXXX' },
-      { key: 'address', label: 'Address', type: 'text', placeholder: 'No, Street, City', fullWidth: true },
     ],
   },
 
@@ -308,7 +303,6 @@ const FORMS = {
         type: 'select',
         options: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday', 'Flexible'],
       },
-      { key: 'address', label: 'Address', type: 'text', placeholder: 'No, Street, City', fullWidth: true },
     ],
   },
 }
@@ -365,7 +359,6 @@ export default function Hero() {
       cleanersCount: 1,
       distance: userLocation?.distanceCategory || 'Within 20 KM',
       distanceKm: userLocation?.distanceKm || 0,
-      address: userLocation?.address || userLocation?.name || '',
     })
     setStep('form')
   }
@@ -1085,7 +1078,6 @@ export default function Hero() {
                     {formData.role && <div><span className="font-bold">Authorized Person:</span> {formData.name} ({formData.role})</div>}
                     {!formData.role && formData.name && <div><span className="font-bold">Name:</span> {formData.name}</div>}
                     {formData.contact && <div><span className="font-bold">Contact:</span> {formData.contact}</div>}
-                    {formData.address && <div><span className="font-bold">Address:</span> {formData.address}</div>}
                     <div><span className="font-bold">Service Location:</span> {userLocation?.name || district} ({userLocation?.distanceKm || 0} km · {userLocation?.distanceCategory || 'Within 20 KM'})</div>
                     <div><span className="font-bold">District / Province:</span> {district}{userLocation?.province ? ` (${userLocation.province})` : ''}</div>
                     {formDef && <div><span className="font-bold">Package:</span> {formDef.title}</div>}
