@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { ArrowRight, Phone, ChevronLeft, CheckCircle2, MapPin, AlertCircle, ClipboardCheck } from 'lucide-react'
+import { ArrowRight, Phone, ChevronLeft, CheckCircle2, MapPin, AlertCircle, ClipboardCheck, LocateFixed, Search, Loader2 } from 'lucide-react'
 import heroBgImg from '../assets/hero_bg.jpg'
 
 /* ─────────────────────────────────────────────
-   LOCATION DATA
+   LOCATION DATA & DISTANCE ENGINE
 ───────────────────────────────────────────── */
 
 const WESTERN_DISTRICTS = ['Colombo', 'Gampaha', 'Kalutara']
@@ -18,6 +18,112 @@ const ALL_DISTRICTS = [
   'Anuradhapura', 'Polonnaruwa',               // North Central
   'Badulla', 'Monaragala',                     // Uva
   'Ratnapura', 'Kegalle',                      // Sabaragamuwa
+]
+
+// Colombo Center reference point for 20km radius calculation
+const COLOMBO_CENTER = { lat: 6.9271, lng: 79.8612, name: 'Colombo Center / Service Hub' }
+
+function calculateHaversineKm(lat1, lon1, lat2, lon2) {
+  const R = 6371 // Earth radius in km
+  const dLat = (lat2 - lat1) * Math.PI / 180
+  const dLon = (lon2 - lon1) * Math.PI / 180
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2)
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+  return Math.round(R * c * 10) / 10
+}
+
+// Curated Western Province localities with coordinates
+const WESTERN_TOWNS = [
+  // Colombo District
+  { name: 'Colombo 01 - Fort', lat: 6.9344, lng: 79.8428 },
+  { name: 'Colombo 02 - Slave Island', lat: 6.9234, lng: 79.8540 },
+  { name: 'Colombo 03 - Kollupitiya', lat: 6.9080, lng: 79.8510 },
+  { name: 'Colombo 04 - Bambalapitiya', lat: 6.8920, lng: 79.8570 },
+  { name: 'Colombo 05 - Havelock Town / Kirulapone', lat: 6.8770, lng: 79.8690 },
+  { name: 'Colombo 06 - Wellawatte', lat: 6.8730, lng: 79.8610 },
+  { name: 'Colombo 07 - Cinnamon Gardens', lat: 6.9090, lng: 79.8680 },
+  { name: 'Colombo 08 - Borella', lat: 6.9150, lng: 79.8820 },
+  { name: 'Colombo 09 - Dematagoda', lat: 6.9340, lng: 79.8780 },
+  { name: 'Colombo 10 - Maradana', lat: 6.9270, lng: 79.8680 },
+  { name: 'Colombo 11 - Pettah', lat: 6.9380, lng: 79.8520 },
+  { name: 'Colombo 12 - Hultsdorf', lat: 6.9390, lng: 79.8620 },
+  { name: 'Colombo 13 - Kotahena', lat: 6.9510, lng: 79.8630 },
+  { name: 'Colombo 14 - Grandpass', lat: 6.9530, lng: 79.8770 },
+  { name: 'Colombo 15 - Mutwal / Modara', lat: 6.9690, lng: 79.8710 },
+  { name: 'Dehiwala', lat: 6.8518, lng: 79.8656 },
+  { name: 'Mount Lavinia', lat: 6.8344, lng: 79.8644 },
+  { name: 'Ratmalana', lat: 6.8210, lng: 79.8720 },
+  { name: 'Moratuwa', lat: 6.7730, lng: 79.8816 },
+  { name: 'Nugegoda', lat: 6.8649, lng: 79.8997 },
+  { name: 'Kohuwala', lat: 6.8580, lng: 79.8860 },
+  { name: 'Mirihana', lat: 6.8710, lng: 79.9040 },
+  { name: 'Maharagama', lat: 6.8480, lng: 79.9268 },
+  { name: 'Kottawa', lat: 6.8430, lng: 79.9655 },
+  { name: 'Pannipitiya', lat: 6.8460, lng: 79.9470 },
+  { name: 'Homagama', lat: 6.8420, lng: 80.0030 },
+  { name: 'Godagama', lat: 6.8430, lng: 80.0430 },
+  { name: 'Meegoda', lat: 6.8470, lng: 80.0810 },
+  { name: 'Padukka', lat: 6.8480, lng: 80.1030 },
+  { name: 'Battaramulla', lat: 6.8990, lng: 79.9210 },
+  { name: 'Thalawathugoda', lat: 6.8730, lng: 79.9320 },
+  { name: 'Pelawatta', lat: 6.8910, lng: 79.9240 },
+  { name: 'Rajagiriya', lat: 6.9090, lng: 79.8970 },
+  { name: 'Kotte / Sri Jayawardenepura', lat: 6.8890, lng: 79.9070 },
+  { name: 'Nawala', lat: 6.8920, lng: 79.8880 },
+  { name: 'Malabe', lat: 6.9042, lng: 79.9546 },
+  { name: 'Kaduwela', lat: 6.9333, lng: 79.9833 },
+  { name: 'Athurugiriya', lat: 6.8730, lng: 79.9880 },
+  { name: 'Kolonnawa', lat: 6.9290, lng: 79.8880 },
+  { name: 'Kotikawatta', lat: 6.9330, lng: 79.9120 },
+  { name: 'Angoda', lat: 6.9350, lng: 79.9280 },
+  { name: 'Piliyandala', lat: 6.8018, lng: 79.9227 },
+  { name: 'Kesbewa', lat: 6.7840, lng: 79.9480 },
+  { name: 'Kahathuduwa', lat: 6.7820, lng: 80.0120 },
+  { name: 'Hanwella', lat: 6.9010, lng: 80.0850 },
+  { name: 'Avissawella', lat: 6.9530, lng: 80.2070 },
+
+  // Gampaha District
+  { name: 'Kelaniya', lat: 6.9553, lng: 79.9186 },
+  { name: 'Peliyagoda', lat: 6.9630, lng: 79.8870 },
+  { name: 'Wattala', lat: 6.9897, lng: 79.8917 },
+  { name: 'Mabola', lat: 6.9970, lng: 79.8910 },
+  { name: 'Hendala', lat: 6.9840, lng: 79.8810 },
+  { name: 'Hunupitiya', lat: 6.9780, lng: 79.9130 },
+  { name: 'Kiribathgoda', lat: 6.9800, lng: 79.9300 },
+  { name: 'Dalugama', lat: 6.9680, lng: 79.9230 },
+  { name: 'Kadawatha', lat: 7.0010, lng: 79.9520 },
+  { name: 'Ragama', lat: 7.0270, lng: 79.9220 },
+  { name: 'Mahabage', lat: 7.0120, lng: 79.8990 },
+  { name: 'Kandana', lat: 7.0478, lng: 79.8950 },
+  { name: 'Ja-Ela', lat: 7.0750, lng: 79.8917 },
+  { name: 'Seeduwa', lat: 7.1260, lng: 79.8730 },
+  { name: 'Katunayake', lat: 7.1690, lng: 79.8880 },
+  { name: 'Negombo', lat: 7.2083, lng: 79.8358 },
+  { name: 'Kochchikade', lat: 7.2610, lng: 79.8610 },
+  { name: 'Minuwangoda', lat: 7.1670, lng: 79.9500 },
+  { name: 'Gampaha', lat: 7.0917, lng: 79.9997 },
+  { name: 'Yakkala', lat: 7.0860, lng: 80.0340 },
+  { name: 'Nittambuwa', lat: 7.1420, lng: 80.1030 },
+  { name: 'Veyangoda', lat: 7.1560, lng: 80.0570 },
+  { name: 'Mirigama', lat: 7.2430, lng: 80.1310 },
+  { name: 'Biyagama', lat: 6.9360, lng: 79.9760 },
+  { name: 'Delgoda', lat: 6.9940, lng: 79.9970 },
+  { name: 'Pugoda', lat: 6.9740, lng: 80.1220 },
+  { name: 'Divulapitiya', lat: 7.2280, lng: 80.0070 },
+
+  // Kalutara District
+  { name: 'Panadura', lat: 6.7132, lng: 79.9074 },
+  { name: 'Wadduwa', lat: 6.6660, lng: 79.9320 },
+  { name: 'Kalutara', lat: 6.5854, lng: 79.9607 },
+  { name: 'Beruwala', lat: 6.4780, lng: 79.9820 },
+  { name: 'Aluthgama', lat: 6.4330, lng: 80.0020 },
+  { name: 'Horana', lat: 6.7150, lng: 80.0630 },
+  { name: 'Bandaragama', lat: 6.7170, lng: 79.9880 },
+  { name: 'Ingiriya', lat: 6.7410, lng: 80.1690 },
+  { name: 'Matugama', lat: 6.5220, lng: 80.1160 },
+  { name: 'Agalawatta', lat: 6.5360, lng: 80.1550 },
 ]
 
 // Equipment list (from chart) used in Customized packages
@@ -188,7 +294,7 @@ const FORMS = {
       {
         key: 'distance',
         label: 'Distance (from Colombo center / service hub)',
-        type: 'radio',
+        type: 'distance-calculator',
         options: ['Within 20 KM', 'Beyond 20 KM'],
         fullWidth: true,
       },
@@ -222,7 +328,7 @@ const FORMS = {
     fields: [
       { key: 'frequency', label: 'Frequency', type: 'radio', options: ['Weekly', 'Monthly'], fullWidth: true },
       { key: 'times', label: 'How many times ?', type: 'radio-conditional', dependsOn: 'frequency', conditionalOptions: LONGTERM_TIMES, fullWidth: true },
-      { key: 'distance', label: 'Distance', type: 'radio', options: ['Within 20 KM', 'Beyond 20 KM'], fullWidth: true },
+      { key: 'distance', label: 'Distance (from Colombo center / service hub)', type: 'distance-calculator', options: ['Within 20 KM', 'Beyond 20 KM'], fullWidth: true },
       { key: '_pricing', label: 'PRICING', type: 'pricing-display', fullWidth: true },
     ],
     contactFields: [
@@ -271,7 +377,7 @@ const FORMS = {
       {
         key: 'distance',
         label: 'Distance (from Colombo center / service hub)',
-        type: 'radio',
+        type: 'distance-calculator',
         options: ['Within 20 KM', 'Beyond 20 KM'],
         fullWidth: true,
       },
@@ -338,6 +444,11 @@ export default function Hero() {
   const [subService, setSubService] = useState(null)
   const [formData, setFormData] = useState({})
 
+  // Distance calculator states
+  const [locInput, setLocInput] = useState('')
+  const [locLoading, setLocLoading] = useState(false)
+  const [locResult, setLocResult] = useState(null)
+
   const isWestern = WESTERN_DISTRICTS.includes(district)
 
   const formKey = category && subService ? `${category}-${subService}` : null
@@ -360,6 +471,9 @@ export default function Hero() {
     if (sub.westernOnly && !isWestern) return  // blocked
     setSubService(sub.id)
     setFormData({})
+    setLocInput('')
+    setLocResult(null)
+    setLocLoading(false)
     setStep('form')
   }
 
@@ -384,6 +498,122 @@ export default function Hero() {
     })
   }
 
+  // Detect location using browser GPS
+  const detectGPSLocation = () => {
+    if (!navigator.geolocation) {
+      setLocResult({ status: 'error', text: 'Geolocation is not supported by your browser.' })
+      return
+    }
+
+    setLocLoading(true)
+    setLocResult(null)
+
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords
+        const km = calculateHaversineKm(COLOMBO_CENTER.lat, COLOMBO_CENTER.lng, latitude, longitude)
+        const distTier = km <= 20 ? 'Within 20 KM' : 'Beyond 20 KM'
+
+        let areaName = ''
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+          )
+          if (res.ok) {
+            const data = await res.json()
+            areaName = data.address?.suburb || data.address?.town || data.address?.city || data.address?.village || data.display_name?.split(',')[0] || ''
+          }
+        } catch (_) {}
+
+        const label = areaName ? `${areaName} (~${km} km)` : `~${km} km from Colombo Center`
+        setLocLoading(false)
+        setLocResult({
+          status: km <= 20 ? 'within' : 'beyond',
+          km,
+          text: `GPS Location: ${label} → ${distTier}`,
+        })
+        handleField('distance', distTier)
+        if (areaName && !formData.address) {
+          handleField('address', areaName)
+        }
+      },
+      (err) => {
+        setLocLoading(false)
+        let msg = 'Could not access device location. Please type your city/address or select an option below.'
+        if (err.code === 1) msg = 'Location permission denied. Please type your city/address or select below.'
+        setLocResult({ status: 'error', text: msg })
+      },
+      { timeout: 10000, enableHighAccuracy: true }
+    )
+  }
+
+  // Calculate distance using town name or typed address
+  const calculateAddressDistance = async (queryText) => {
+    const q = (queryText || locInput).trim()
+    if (!q) return
+
+    setLocLoading(true)
+    setLocResult(null)
+
+    const qLower = q.toLowerCase()
+
+    // 1. Check local Western Province towns dictionary
+    const localMatch = WESTERN_TOWNS.find(t => {
+      const tLower = t.name.toLowerCase()
+      return tLower === qLower || tLower.includes(qLower) || qLower.includes(tLower) || qLower.includes(tLower.split(' - ')[0])
+    })
+
+    if (localMatch) {
+      const km = calculateHaversineKm(COLOMBO_CENTER.lat, COLOMBO_CENTER.lng, localMatch.lat, localMatch.lng)
+      const distTier = km <= 20 ? 'Within 20 KM' : 'Beyond 20 KM'
+      setLocLoading(false)
+      setLocResult({
+        status: km <= 20 ? 'within' : 'beyond',
+        km,
+        text: `${localMatch.name}: ~${km} km from Colombo Center → ${distTier}`,
+      })
+      handleField('distance', distTier)
+      if (!formData.address) {
+        handleField('address', localMatch.name)
+      }
+      return
+    }
+
+    // 2. Fetch from OpenStreetMap Nominatim
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q + ', Sri Lanka')}&limit=1`
+      )
+      if (res.ok) {
+        const data = await res.json()
+        if (data && data.length > 0) {
+          const lat = parseFloat(data[0].lat)
+          const lon = parseFloat(data[0].lon)
+          const km = calculateHaversineKm(COLOMBO_CENTER.lat, COLOMBO_CENTER.lng, lat, lon)
+          const distTier = km <= 20 ? 'Within 20 KM' : 'Beyond 20 KM'
+          const placeName = data[0].name || data[0].display_name?.split(',')[0] || q
+          setLocLoading(false)
+          setLocResult({
+            status: km <= 20 ? 'within' : 'beyond',
+            km,
+            text: `${placeName}: ~${km} km from Colombo Center → ${distTier}`,
+          })
+          handleField('distance', distTier)
+          if (!formData.address) {
+            handleField('address', q)
+          }
+          return
+        }
+      }
+    } catch (_) {}
+
+    setLocLoading(false)
+    setLocResult({
+      status: 'error',
+      text: `Could not verify coordinates for "${q}". Please choose manual option below.`,
+    })
+  }
+
   const handleSubmit = (e) => {
     e.preventDefault()
     setStep('done')
@@ -395,6 +625,9 @@ export default function Hero() {
     setDistrict('')
     setSubService(null)
     setFormData({})
+    setLocInput('')
+    setLocResult(null)
+    setLocLoading(false)
   }
 
   /* progress */
@@ -413,7 +646,7 @@ export default function Hero() {
     : ['Type', 'Location', 'Service', 'Details', 'Done']
 
   const renderField = (field) => {
-    const spanFull = field.fullWidth || ['radio', 'radio-conditional', 'pricing-display', 'customized-pricing-display', 'checks', 'textarea'].includes(field.type)
+    const spanFull = field.fullWidth || ['radio', 'radio-conditional', 'distance-calculator', 'pricing-display', 'customized-pricing-display', 'checks', 'textarea'].includes(field.type)
     return (
       <div key={field.key} className={spanFull ? 'sm:col-span-2' : ''}>
         {field.type !== 'pricing-display' && field.type !== 'customized-pricing-display' && (
@@ -480,6 +713,127 @@ export default function Hero() {
                 </label>
               )
             })}
+          </div>
+        )}
+
+        {field.type === 'distance-calculator' && (
+          <div className="space-y-2.5">
+            <div className="flex flex-col sm:flex-row gap-2">
+              <div className="relative flex-1">
+                <input
+                  type="text"
+                  list="western-towns-datalist"
+                  value={locInput}
+                  onChange={e => {
+                    const val = e.target.value
+                    setLocInput(val)
+                    const exact = WESTERN_TOWNS.find(t => t.name.toLowerCase() === val.toLowerCase().trim())
+                    if (exact) calculateAddressDistance(val)
+                  }}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      calculateAddressDistance()
+                    }
+                  }}
+                  placeholder="Enter your town, suburb, or street address..."
+                  className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30 bg-slate-50 placeholder-slate-400"
+                />
+                <MapPin className="w-4 h-4 text-slate-400 absolute left-3 top-3 pointer-events-none" />
+                <datalist id="western-towns-datalist">
+                  {WESTERN_TOWNS.map(t => (
+                    <option key={t.name} value={t.name} />
+                  ))}
+                </datalist>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => calculateAddressDistance()}
+                  disabled={locLoading || !locInput.trim()}
+                  className="flex-1 sm:flex-none px-3.5 py-2.5 bg-sky-600 hover:bg-sky-500 disabled:bg-slate-200 disabled:text-slate-400 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:cursor-not-allowed shadow-xs"
+                >
+                  {locLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Search className="w-3.5 h-3.5" />}
+                  <span>Check</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={detectGPSLocation}
+                  disabled={locLoading}
+                  title="Detect distance using current device GPS"
+                  className="px-3 py-2.5 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-emerald-800 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-xs"
+                >
+                  <LocateFixed className="w-3.5 h-3.5 text-emerald-600" />
+                  <span className="hidden sm:inline">Use GPS</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Calculated Distance Result Alert */}
+            {locResult && (
+              <div
+                className={`p-2.5 rounded-xl border text-xs flex items-start gap-2 transition-all ${
+                  locResult.status === 'within'
+                    ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
+                    : locResult.status === 'beyond'
+                    ? 'bg-sky-50 border-sky-200 text-sky-900'
+                    : 'bg-amber-50 border-amber-200 text-amber-900'
+                }`}
+              >
+                {locResult.status === 'within' ? (
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                ) : locResult.status === 'beyond' ? (
+                  <MapPin className="w-4 h-4 text-sky-600 shrink-0 mt-0.5" />
+                ) : (
+                  <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                )}
+                <div className="flex-1 leading-snug">
+                  <div className="font-extrabold">{locResult.text}</div>
+                  {locResult.status !== 'error' && (
+                    <div className="text-[11px] opacity-80 mt-0.5">
+                      Service radius verified. Selected tier applied to quotation below.
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Manual Tier Selection / Fallback */}
+            <div className="grid grid-cols-2 gap-2 pt-0.5">
+              {field.options.map(opt => {
+                const selected = formData[field.key] === opt
+                return (
+                  <label
+                    key={opt}
+                    className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-bold cursor-pointer transition-all ${
+                      selected
+                        ? 'border-sky-600 bg-sky-50 text-sky-900 ring-1 ring-sky-600'
+                        : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name={field.key}
+                      value={opt}
+                      checked={selected}
+                      onChange={() => handleField(field.key, opt)}
+                      required
+                      className="accent-sky-600 shrink-0"
+                    />
+                    <div className="flex-1">
+                      <span>{opt}</span>
+                      {selected && locResult && locResult.km && (
+                        <span className="block text-[10px] font-normal text-sky-700">
+                          ~{locResult.km} km from hub
+                        </span>
+                      )}
+                    </div>
+                  </label>
+                )
+              })}
+            </div>
           </div>
         )}
 
