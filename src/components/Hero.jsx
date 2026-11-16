@@ -325,27 +325,12 @@ const WhatsAppIcon = ({ className = 'w-4 h-4' }) => (
 export default function Hero() {
   const [step, setStep] = useState('category')   // category | location | subservice | form | done
   const [category, setCategory] = useState(null)
-  const [district, setDistrict] = useState('Colombo')
-  const [userLocation, setUserLocation] = useState(() => {
-    const defaultLat = 6.9344
-    const defaultLng = 79.8428
-    const dist = calculateDistanceKm(COLOMBO_HUB.lat, COLOMBO_HUB.lng, defaultLat, defaultLng)
-    return {
-      name: 'Colombo Fort / CBD',
-      address: 'Colombo Fort, Colombo',
-      lat: defaultLat,
-      lng: defaultLng,
-      district: 'Colombo',
-      province: 'Western Province',
-      isWestern: true,
-      distanceKm: dist,
-      distanceCategory: dist <= 20 ? 'Within 20 KM' : 'Beyond 20 KM',
-    }
-  })
+  const [district, setDistrict] = useState('')
+  const [userLocation, setUserLocation] = useState(null)
   const [subService, setSubService] = useState(null)
   const [formData, setFormData] = useState({})
 
-  const isWestern = userLocation?.isWestern ?? WESTERN_DISTRICTS.includes(district)
+  const isWestern = userLocation?.isWestern ?? (district ? WESTERN_DISTRICTS.includes(district) : false)
 
   const formKey = category && subService ? `${category}-${subService}` : null
   const formDef = formKey ? FORMS[formKey] : null
@@ -499,21 +484,8 @@ export default function Hero() {
   const reset = () => {
     setStep('category')
     setCategory(null)
-    setDistrict('Colombo')
-    const defaultLat = 6.9344
-    const defaultLng = 79.8428
-    const dist = calculateDistanceKm(COLOMBO_HUB.lat, COLOMBO_HUB.lng, defaultLat, defaultLng)
-    setUserLocation({
-      name: 'Colombo Fort / CBD',
-      address: 'Colombo Fort, Colombo',
-      lat: defaultLat,
-      lng: defaultLng,
-      district: 'Colombo',
-      province: 'Western Province',
-      isWestern: true,
-      distanceKm: dist,
-      distanceCategory: dist <= 20 ? 'Within 20 KM' : 'Beyond 20 KM',
-    })
+    setDistrict('')
+    setUserLocation(null)
     setSubService(null)
     setFormData({})
   }
@@ -983,7 +955,7 @@ export default function Hero() {
                     disabled={!userLocation}
                     className="w-full py-3.5 bg-sky-600 hover:bg-sky-500 disabled:bg-slate-200 disabled:text-slate-400 text-white font-extrabold rounded-2xl transition-all cursor-pointer disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-sky-600/30 hover:shadow-sky-500/50 hover:-translate-y-0.5 active:translate-y-0 mt-3"
                   >
-                    <span>Continue to Packages</span>
+                    <span>{userLocation ? 'Continue to Packages' : 'Select Location to Continue'}</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
                 </>

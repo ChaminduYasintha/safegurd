@@ -211,23 +211,7 @@ export default function MapLocationPicker({
   onLocationSelect,
   category = 'residential',
 }) {
-  // Default to Colombo center or initial location
-  const defaultLoc = initialLocation || {
-    name: 'Colombo Fort / CBD',
-    address: 'Colombo Fort, Colombo',
-    lat: 6.9344,
-    lng: 79.8428,
-    district: 'Colombo',
-    province: 'Western Province',
-    isWestern: true,
-    distanceKm: calculateDistanceKm(COLOMBO_HUB.lat, COLOMBO_HUB.lng, 6.9344, 79.8428),
-    distanceCategory:
-      calculateDistanceKm(COLOMBO_HUB.lat, COLOMBO_HUB.lng, 6.9344, 79.8428) <= 20
-        ? 'Within 20 KM'
-        : 'Beyond 20 KM',
-  }
-
-  const [currentLoc, setCurrentLoc] = useState(defaultLoc)
+  const [currentLoc, setCurrentLoc] = useState(initialLocation)
   const [searchQuery, setSearchQuery] = useState('')
   const [suggestions, setSuggestions] = useState([])
   const [isSearchingOnline, setIsSearchingOnline] = useState(false)
@@ -266,10 +250,23 @@ export default function MapLocationPicker({
       onLocationSelect(locData)
     }
 
-    // Move marker & pan map
+    // Create or move marker & pan map
     if (userMarkerRef.current) {
       userMarkerRef.current.setLatLng([lat, lng])
+    } else if (mapInstanceRef.current) {
+      const marker = L.marker([lat, lng], {
+        icon: createPinIcon(),
+        draggable: true,
+      }).addTo(mapInstanceRef.current)
+
+      marker.on('dragend', e => {
+        const pos = e.target.getLatLng()
+        applyLocation(pos.lat, pos.lng)
+      })
+
+      userMarkerRef.current = marker
     }
+
     if (mapInstanceRef.current) {
       mapInstanceRef.current.panTo([lat, lng], { animate: true })
     }
@@ -280,8 +277,12 @@ export default function MapLocationPicker({
     if (!mapContainerRef.current) return
     if (mapInstanceRef.current) return // already initialized
 
+    const initialCenter = currentLoc
+      ? [currentLoc.lat, currentLoc.lng]
+      : [COLOMBO_HUB.lat, COLOMBO_HUB.lng]
+
     const map = L.map(mapContainerRef.current, {
-      center: [currentLoc.lat, currentLoc.lng],
+      center: initialCenter,
       zoom: 11,
       zoomControl: false,
       attributionControl: false,
@@ -295,7 +296,7 @@ export default function MapLocationPicker({
       maxZoom: 18,
     }).addTo(map)
 
-    // 20 KM radius circle around Colombo Hub
+    // 20 KM radius circle around Kadawatha Hub
     const circle = L.circle([COLOMBO_HUB.lat, COLOMBO_HUB.lng], {
       radius: 20000,
       color: '#0284c7',
@@ -319,23 +320,26 @@ export default function MapLocationPicker({
       )
       .addTo(map)
 
-    // Customer Location Draggable Marker
-    const marker = L.marker([currentLoc.lat, currentLoc.lng], {
-      icon: createPinIcon(),
-      draggable: true,
-    }).addTo(map)
+    // Customer Location Draggable Marker (if already provided)
+    if (currentLoc) {
+      const marker = L.marker([currentLoc.lat, currentLoc.lng], {
+        icon: createPinIcon(),
+        draggable: true,
+      }).addTo(map)
 
-    marker.on('dragend', e => {
-      const pos = e.target.getLatLng()
-      applyLocation(pos.lat, pos.lng)
-    })
+      marker.on('dragend', e => {
+        const pos = e.target.getLatLng()
+        applyLocation(pos.lat, pos.lng)
+      })
+
+      userMarkerRef.current = marker
+    }
 
     // Click map to place pin
     map.on('click', e => {
       applyLocation(e.latlng.lat, e.latlng.lng)
     })
 
-    userMarkerRef.current = marker
     mapInstanceRef.current = map
 
     // Ensure map tiles resize correctly after mounting
@@ -347,6 +351,7 @@ export default function MapLocationPicker({
       clearTimeout(timer)
       map.remove()
       mapInstanceRef.current = null
+      userMarkerRef.current = null
     }
   }, [])
 
@@ -551,61 +556,75 @@ export default function MapLocationPicker({
         {/* Hint banner */}
         <div className="absolute bottom-1.5 left-2 right-2 z-10 pointer-events-none text-center">
           <span className="inline-block px-2.5 py-0.5 rounded-full bg-slate-900/75 text-white text-[10px] font-semibold backdrop-blur-xs shadow-xs">
-            💡 Click map or drag pin to adjust your exact location
+            {currentLoc
+              ? '💡 Drag pin or click map to adjust your exact location'
+              : '📍 Search your town above or click on the map to pin your location'}
           </span>
         </div>
       </div>
 
       {/* ── LIVE LOCATION & DISTANCE STATUS CARD ── */}
-      <div className="rounded-2xl border-2 border-sky-400/50 bg-gradient-to-br from-sky-50 via-white to-emerald-50/50 p-3.5 shadow-sm space-y-2.5">
-        <div className="flex items-start justify-between gap-2">
-          <div className="space-y-0.5">
-            <div className="flex items-center gap-1.5 text-xs font-black text-slate-900">
-              <MapPin className="w-4 h-4 text-sky-600 shrink-0" />
-              <span>{currentLoc.name}</span>
+      {!currentLoc ? (
+        <div className="rounded-2xl border-2 border-dashed border-sky-300 bg-sky-50/70 p-4 text-center space-y-1.5">
+          <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-sky-900">
+            <MapPin className="w-4 h-4 text-sky-600 animate-pulse" />
+            <span>Please Select Your Location</span>
+          </div>
+          <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
+            Search your town or suburb above, tap on the map, or click <span className="font-bold text-sky-700">"Use GPS"</span> to detect your service distance.
+          </p>
+        </div>
+      ) : (
+        <div className="rounded-2xl border-2 border-sky-400/50 bg-gradient-to-br from-sky-50 via-white to-emerald-50/50 p-3.5 shadow-sm space-y-2.5">
+          <div className="flex items-start justify-between gap-2">
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-1.5 text-xs font-black text-slate-900">
+                <MapPin className="w-4 h-4 text-sky-600 shrink-0" />
+                <span>{currentLoc.name}</span>
+              </div>
+              <p className="text-[11px] text-slate-500 pl-5">
+                District: <span className="font-bold text-slate-700">{currentLoc.district}</span>
+                {' · '}
+                <span>{currentLoc.province}</span>
+              </p>
             </div>
-            <p className="text-[11px] text-slate-500 pl-5">
-              District: <span className="font-bold text-slate-700">{currentLoc.district}</span>
-              {' · '}
-              <span>{currentLoc.province}</span>
-            </p>
+
+            {/* Distance Badge */}
+            <div className="text-right shrink-0">
+              <div className="text-lg sm:text-xl font-black text-sky-800 leading-none">
+                {currentLoc.distanceKm} <span className="text-xs font-bold text-slate-600">km</span>
+              </div>
+              <span
+                className={`inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider ${
+                  currentLoc.distanceCategory === 'Within 20 KM'
+                    ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                    : 'bg-sky-100 text-sky-800 border border-sky-300'
+                }`}
+              >
+                {currentLoc.distanceCategory === 'Within 20 KM' ? 'Within 20 km' : 'Beyond 20 km'}
+              </span>
+            </div>
           </div>
 
-          {/* Distance Badge */}
-          <div className="text-right shrink-0">
-            <div className="text-lg sm:text-xl font-black text-sky-800 leading-none">
-              {currentLoc.distanceKm} <span className="text-xs font-bold text-slate-600">km</span>
-            </div>
-            <span
-              className={`inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider ${
-                currentLoc.distanceCategory === 'Within 20 KM'
-                  ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                  : 'bg-sky-100 text-sky-800 border border-sky-300'
-              }`}
-            >
-              {currentLoc.distanceCategory === 'Within 20 KM' ? 'Within 20 km' : 'Beyond 20 km'}
+          {/* Service Eligibility Note */}
+          <div className="pt-2 border-t border-sky-100 flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[11px]">
+            {currentLoc.isWestern ? (
+              <span className="flex items-center gap-1 text-emerald-700 font-semibold">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                Western Province: All service packages available
+              </span>
+            ) : (
+              <span className="flex items-center gap-1 text-amber-700 font-semibold">
+                <AlertCircle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                Outstation: Deep Cleaning available via Site Inspection
+              </span>
+            )}
+            <span className="text-[10px] text-slate-400 font-medium sm:text-right">
+              Hub: 14/1/A, Kandy Rd, Kadawatha
             </span>
           </div>
         </div>
-
-        {/* Service Eligibility Note */}
-        <div className="pt-2 border-t border-sky-100 flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[11px]">
-          {currentLoc.isWestern ? (
-            <span className="flex items-center gap-1 text-emerald-700 font-semibold">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-              Western Province: All service packages available
-            </span>
-          ) : (
-            <span className="flex items-center gap-1 text-amber-700 font-semibold">
-              <AlertCircle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-              Outstation: Deep Cleaning available via Site Inspection
-            </span>
-          )}
-          <span className="text-[10px] text-slate-400 font-medium sm:text-right">
-            Hub: 14/1/A, Kandy Rd, Kadawatha
-          </span>
-        </div>
-      </div>
+      )}
     </div>
   )
 }
