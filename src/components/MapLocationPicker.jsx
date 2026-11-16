@@ -13,13 +13,17 @@ import {
 } from 'lucide-react'
 
 /* ─────────────────────────────────────────────
-   COLOMBO SERVICE HUB COORDINATES
+   SERVICE HUB COORDINATES (KADAWATHA)
 ───────────────────────────────────────────── */
 export const COLOMBO_HUB = {
-  lat: 6.9271,
-  lng: 79.8612,
-  label: 'Safeguard Colombo Service Hub',
-  address: 'Colombo City Center / Hub',
+  lat: 7.0061,
+  lng: 79.9576,
+  label: 'Safeguard Service Hub (Kadawatha)',
+  address: '14/1/A, Kandy Road, Kadawatha, Sri Lanka',
+  shortAddress: '14/1/A, Kandy Rd, Kadawatha',
+  town: 'Kadawatha',
+  district: 'Gampaha',
+  province: 'Western Province',
 }
 
 /* ─────────────────────────────────────────────
@@ -186,17 +190,17 @@ const createHubIcon = () =>
   L.divIcon({
     className: 'custom-hub-pin',
     html: `
-      <div style="position: relative; display: flex; flex-direction: column; align-items: center;">
-        <div style="background: #0f172a; width: 28px; height: 28px; border-radius: 50%; border: 2.5px solid #38bdf8; box-shadow: 0 3px 10px rgba(15, 23, 42, 0.5); display: flex; align-items: center; justify-content: center; color: #38bdf8; font-size: 13px; font-weight: 900;">
+      <div style="position: relative; display: flex; flex-direction: column; align-items: center; cursor: pointer;">
+        <div style="background: #0f172a; width: 30px; height: 30px; border-radius: 50%; border: 2.5px solid #38bdf8; box-shadow: 0 3px 10px rgba(15, 23, 42, 0.5); display: flex; align-items: center; justify-content: center; color: #38bdf8; font-size: 14px; font-weight: 900;">
           ★
         </div>
-        <div style="position: absolute; top: -18px; white-space: nowrap; background: #0f172a; color: #38bdf8; font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 6px; border: 1px solid #38bdf8; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
-          Colombo Hub
+        <div style="position: absolute; top: -19px; white-space: nowrap; background: #0f172a; color: #38bdf8; font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 6px; border: 1px solid #38bdf8; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+          Kadawatha Hub
         </div>
       </div>
     `,
-    iconSize: [28, 28],
-    iconAnchor: [14, 14],
+    iconSize: [30, 30],
+    iconAnchor: [15, 15],
   })
 
 /* ─────────────────────────────────────────────
@@ -302,11 +306,18 @@ export default function MapLocationPicker({
     }).addTo(map)
     circleRef.current = circle
 
-    // Colombo Hub Pin
+    // Kadawatha Service Hub Pin with popup
     L.marker([COLOMBO_HUB.lat, COLOMBO_HUB.lng], {
       icon: createHubIcon(),
-      interactive: false,
-    }).addTo(map)
+    })
+      .bindPopup(
+        `<div style="font-family: sans-serif; font-size: 12px; line-height: 1.4; padding: 2px;">
+          <div style="font-weight: 800; color: #0369a1;">★ Safeguard Service Hub</div>
+          <div style="color: #334155; margin-top: 3px; font-size: 11px; font-weight: 600;">14/1/A, Kandy Road, Kadawatha</div>
+          <div style="color: #64748b; font-size: 10px; margin-top: 2px;">Central Service Hub (20 km Radius origin)</div>
+        </div>`
+      )
+      .addTo(map)
 
     // Customer Location Draggable Marker
     const marker = L.marker([currentLoc.lat, currentLoc.lng], {
@@ -532,8 +543,8 @@ export default function MapLocationPicker({
             <span>20 km Radius Zone</span>
           </div>
           <div className="px-2 py-0.5 rounded-md bg-white/90 backdrop-blur-xs border border-slate-200 text-[10px] font-bold text-slate-700 shadow-2xs flex items-center gap-1">
-            <span className="text-sky-600">★</span>
-            <span>Hub</span>
+            <span className="text-sky-600 font-black">★</span>
+            <span>Kadawatha Hub</span>
           </div>
         </div>
 
@@ -578,7 +589,7 @@ export default function MapLocationPicker({
         </div>
 
         {/* Service Eligibility Note */}
-        <div className="pt-2 border-t border-sky-100 flex items-center justify-between text-[11px]">
+        <div className="pt-2 border-t border-sky-100 flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[11px]">
           {currentLoc.isWestern ? (
             <span className="flex items-center gap-1 text-emerald-700 font-semibold">
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
@@ -587,9 +598,12 @@ export default function MapLocationPicker({
           ) : (
             <span className="flex items-center gap-1 text-amber-700 font-semibold">
               <AlertCircle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-              Other Province: Deep Cleaning available via Site Inspection
+              Outstation: Deep Cleaning available via Site Inspection
             </span>
           )}
+          <span className="text-[10px] text-slate-400 font-medium sm:text-right">
+            Hub: 14/1/A, Kandy Rd, Kadawatha
+          </span>
         </div>
       </div>
     </div>

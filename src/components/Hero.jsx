@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { ArrowRight, Phone, ChevronLeft, CheckCircle2, MapPin, AlertCircle, ClipboardCheck, Navigation } from 'lucide-react'
 import heroBgImg from '../assets/hero_bg.jpg'
-import MapLocationPicker, { COLOMBO_HUB } from './MapLocationPicker'
+import MapLocationPicker, { COLOMBO_HUB, calculateDistanceKm } from './MapLocationPicker'
 
 /* ─────────────────────────────────────────────
    LOCATION DATA
@@ -321,16 +321,21 @@ export default function Hero() {
   const [step, setStep] = useState('category')   // category | location | subservice | form | done
   const [category, setCategory] = useState(null)
   const [district, setDistrict] = useState('Colombo')
-  const [userLocation, setUserLocation] = useState({
-    name: 'Colombo Fort / CBD',
-    address: 'Colombo Fort, Colombo',
-    lat: 6.9344,
-    lng: 79.8428,
-    district: 'Colombo',
-    province: 'Western Province',
-    isWestern: true,
-    distanceKm: 1.2,
-    distanceCategory: 'Within 20 KM',
+  const [userLocation, setUserLocation] = useState(() => {
+    const defaultLat = 6.9344
+    const defaultLng = 79.8428
+    const dist = calculateDistanceKm(COLOMBO_HUB.lat, COLOMBO_HUB.lng, defaultLat, defaultLng)
+    return {
+      name: 'Colombo Fort / CBD',
+      address: 'Colombo Fort, Colombo',
+      lat: defaultLat,
+      lng: defaultLng,
+      district: 'Colombo',
+      province: 'Western Province',
+      isWestern: true,
+      distanceKm: dist,
+      distanceCategory: dist <= 20 ? 'Within 20 KM' : 'Beyond 20 KM',
+    }
   })
   const [subService, setSubService] = useState(null)
   const [formData, setFormData] = useState({})
@@ -395,16 +400,19 @@ export default function Hero() {
     setStep('category')
     setCategory(null)
     setDistrict('Colombo')
+    const defaultLat = 6.9344
+    const defaultLng = 79.8428
+    const dist = calculateDistanceKm(COLOMBO_HUB.lat, COLOMBO_HUB.lng, defaultLat, defaultLng)
     setUserLocation({
       name: 'Colombo Fort / CBD',
       address: 'Colombo Fort, Colombo',
-      lat: 6.9344,
-      lng: 79.8428,
+      lat: defaultLat,
+      lng: defaultLng,
       district: 'Colombo',
       province: 'Western Province',
       isWestern: true,
-      distanceKm: 1.2,
-      distanceCategory: 'Within 20 KM',
+      distanceKm: dist,
+      distanceCategory: dist <= 20 ? 'Within 20 KM' : 'Beyond 20 KM',
     })
     setSubService(null)
     setFormData({})
