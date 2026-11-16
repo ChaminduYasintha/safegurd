@@ -176,6 +176,7 @@ const FORMS = {
         type: 'text',
         placeholder: 'e.g. 3 Bedrooms, 2 Baths (~2,000 sq ft)',
         fullWidth: true,
+        optional: true,
       },
       {
         key: 'equipment',
@@ -258,6 +259,7 @@ const FORMS = {
         type: 'text',
         placeholder: 'e.g. 2 Floors, 15 Cabins (~3,500 sq ft)',
         fullWidth: true,
+        optional: true,
       },
       {
         key: 'equipment',
