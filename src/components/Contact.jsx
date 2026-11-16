@@ -46,7 +46,7 @@ export default function Contact() {
     const text = encodeURIComponent(
       `Hello Safeguard Cleaning! My name is ${formData.name || 'a customer'}. I would like a quote for ${formData.service} for my ${formData.propertyType} property. Phone: ${formData.phone || 'N/A'}. Details: ${formData.message || 'Please provide details.'}`
     )
-    window.open(`https://wa.me/94704906565?text=${text}`, '_blank')
+    window.open(`https://wa.me/94711569849?text=${text}`, '_blank')
   }
 
   return (
@@ -106,12 +106,12 @@ export default function Contact() {
                       WhatsApp Support
                     </div>
                     <a
-                      href="https://wa.me/94704906565"
+                      href="https://wa.me/94711569849"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="block text-slate-900 font-extrabold text-base hover:text-emerald-600 transition-colors"
                     >
-                      +94 70 490 5655
+                      +94 71 156 9849
                     </a>
                   </div>
                 </div>

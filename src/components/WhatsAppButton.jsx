@@ -2,7 +2,7 @@ export default function WhatsAppButton() {
   return (
     <aside aria-label="WhatsApp quick chat" className="fixed bottom-6 right-6 z-40">
       <a
-        href="https://wa.me/94704906565?text=Hello%20Safeguard%20Cleaning!%20I%20would%20like%20to%20inquire%20about%20your%20cleaning%20services."
+        href="https://wa.me/94711569849?text=Hello%20Safeguard%20Cleaning!%20I%20would%20like%20to%20inquire%20about%20your%20cleaning%20services."
         target="_blank"
         rel="noreferrer"
         aria-label="Chat on WhatsApp with Safeguard Cleaning Services"

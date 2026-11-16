@@ -61,7 +61,7 @@ export default function Navbar({ onBookNow }) {
               f
             </a>
             <a
-              href="https://wa.me/94704906565"
+              href="https://wa.me/94711569849"
               target="_blank"
               rel="noopener noreferrer"
               className="w-6 h-6 rounded-full border border-white/50 flex items-center justify-center hover:bg-white hover:text-[#08729f] transition-all text-[11px]"

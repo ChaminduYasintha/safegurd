@@ -308,6 +308,17 @@ const FORMS = {
 }
 
 /* ─────────────────────────────────────────────
+   WHATSAPP ICON & CONSTANTS
+───────────────────────────────────────────── */
+const WHATSAPP_BOOKING_NUMBER = '94711569849' // +94 71 156 9849
+
+const WhatsAppIcon = ({ className = 'w-4 h-4' }) => (
+  <svg viewBox="0 0 24 24" className={`${className} fill-current`} aria-hidden="true">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+  </svg>
+)
+
+/* ─────────────────────────────────────────────
    MAIN HERO COMPONENT
 ───────────────────────────────────────────── */
 
@@ -384,9 +395,105 @@ export default function Hero() {
     })
   }
 
+  const formatWhatsAppBookingMessage = () => {
+    const isCorporate = category === 'corporate'
+    const effectiveDist = formData.distance || userLocation?.distanceCategory || 'Within 20 KM'
+
+    const lines = [
+      `*SAFEGUARD CLEANING SERVICES*`,
+      `*BOOKING & QUOTATION REQUEST*`,
+      `────────────────────────────`,
+      `📋 *Package:* ${formDef?.title || 'Cleaning Service'}`,
+      `🏢 *Client Type:* ${isCorporate ? 'Corporate' : 'Residential'}`,
+    ]
+
+    if (isCorporate && formData.companyName) {
+      lines.push(`🏛️ *Company:* ${formData.companyName}`)
+    }
+    if (isCorporate && formData.role) {
+      lines.push(`👤 *Authorized Person:* ${formData.name || ''} (${formData.role})`)
+    } else if (formData.name) {
+      lines.push(`👤 *Customer Name:* ${formData.name}`)
+    }
+    if (formData.contact) {
+      lines.push(`📞 *Contact No:* ${formData.contact}`)
+    }
+
+    lines.push(
+      `📍 *Service Location:* ${userLocation?.name || district}`,
+      `📌 *District / Province:* ${district}${userLocation?.province ? ` (${userLocation.province})` : ''}`,
+      `🚗 *Distance from Hub:* ${userLocation?.distanceKm || 0} km (${effectiveDist})`
+    )
+
+    if (formData.date) {
+      const timeStr = formData.startTime ? ` at ${formData.startTime}` : formData.time ? ` at ${formData.time}` : ''
+      const dayStr = formData.day ? ` (${formData.day})` : ''
+      lines.push(`📅 *${formDef?.isInspection ? 'Inspection Date' : 'Cleaning Date'}:* ${formData.date}${timeStr}${dayStr}`)
+    }
+
+    if (formData.cleanersCount) {
+      lines.push(`👥 *Cleaners Count:* ${formData.cleanersCount}`)
+    }
+
+    if (formData.propertyDetails) {
+      lines.push(`🏠 *${isCorporate ? 'Premises Details' : 'Property Details'}:* ${formData.propertyDetails}`)
+    }
+
+    if (formData.equipment && formData.equipment.length > 0) {
+      lines.push(`🧰 *Equipment Needed:* ${formData.equipment.join(', ')}`)
+    }
+
+    if (formData.instructions && formData.instructions.trim()) {
+      lines.push(`📝 *Scope of Work / Instructions:*\n${formData.instructions.trim()}`)
+    }
+
+    if (formDef?.isLongTerm) {
+      const price = getLongtermPrice(formData.frequency, formData.times, effectiveDist)
+      if (price !== null) {
+        lines.push(
+          `────────────────────────────`,
+          `💰 *CONTRACT RATE:* LKR ${price.toLocaleString()} / month`,
+          `(${formData.frequency} · ${formData.times} · ${effectiveDist})`
+        )
+      }
+    } else if (!formDef?.isLongTerm && !formDef?.isInspection && formData.cleanersCount) {
+      const est = getCustomizedEstimate(formData.cleanersCount, formData.equipment, effectiveDist)
+      lines.push(
+        `────────────────────────────`,
+        `💰 *ESTIMATED TOTAL: LKR ${est.total.toLocaleString()}*`,
+        `• Cleaners (${est.cleanersCount}): LKR ${est.cleanerTotal.toLocaleString()}`,
+        ...(est.equipmentTotal > 0 ? [`• Additional Equipment (${est.eqCount} items): LKR ${est.equipmentTotal.toLocaleString()}`] : []),
+        ...(est.transportRate !== null ? [`• Transport (${est.vehicleName} · ${effectiveDist}): LKR ${est.transportRate.toLocaleString()}`] : []),
+        `• 15% Service Margin: LKR ${est.margin.toLocaleString()}`
+      )
+    } else if (formDef?.isInspection) {
+      lines.push(
+        `────────────────────────────`,
+        `🔍 *Site inspection required before final quotation.*`
+      )
+    }
+
+    lines.push(
+      `────────────────────────────`,
+      `Please confirm receipt and booking availability.`
+    )
+
+    return lines.join('\n')
+  }
+
+  const getWhatsAppUrl = () => {
+    const text = encodeURIComponent(formatWhatsAppBookingMessage())
+    return `https://wa.me/94711569849?text=${text}`
+  }
+
   const handleSubmit = (e) => {
     e.preventDefault()
     setStep('done')
+    try {
+      window.open(getWhatsAppUrl(), '_blank')
+    } catch (err) {
+      console.warn('Popup blocked:', err)
+    }
   }
 
   const reset = () => {
@@ -975,16 +1082,21 @@ export default function Hero() {
 
                     <button
                       type="submit"
-                      className="sm:col-span-2 w-full py-3.5 px-4 bg-sky-600 hover:bg-sky-500 text-white font-extrabold rounded-2xl shadow-lg shadow-sky-600/30 hover:shadow-sky-500/50 transition-all flex items-center justify-center gap-2 cursor-pointer hover:-translate-y-0.5 active:translate-y-0 mt-1"
+                      className={`sm:col-span-2 w-full py-3.5 px-4 font-extrabold rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer hover:-translate-y-0.5 active:translate-y-0 mt-1 ${
+                        formDef.hasContactStep
+                          ? 'bg-sky-600 hover:bg-sky-500 text-white shadow-sky-600/30 hover:shadow-sky-500/50'
+                          : 'bg-[#25D366] hover:bg-[#20bd5a] text-white shadow-emerald-600/30 hover:shadow-emerald-500/50'
+                      }`}
                     >
+                      {!formDef.hasContactStep && <WhatsAppIcon className="w-5 h-5 shrink-0" />}
                       <span>
                         {formDef.hasContactStep
                           ? 'Next: Contact Details'
                           : formDef.isInspection
-                            ? 'Request an Inspection'
-                            : 'Get a Quote'}
+                            ? 'Request Inspection via WhatsApp'
+                            : 'Send Booking via WhatsApp'}
                       </span>
-                      <ArrowRight className="w-4 h-4" />
+                      {formDef.hasContactStep && <ArrowRight className="w-4 h-4" />}
                     </button>
                   </form>
                 </>
@@ -1050,10 +1162,10 @@ export default function Hero() {
 
                     <button
                       type="submit"
-                      className="sm:col-span-2 w-full py-3.5 px-4 bg-sky-600 hover:bg-sky-500 text-white font-extrabold rounded-2xl shadow-lg shadow-sky-600/30 hover:shadow-sky-500/50 transition-all flex items-center justify-center gap-2 cursor-pointer hover:-translate-y-0.5 active:translate-y-0 mt-1"
+                      className="sm:col-span-2 w-full py-3.5 px-4 bg-[#25D366] hover:bg-[#20bd5a] text-white font-extrabold rounded-2xl shadow-lg shadow-emerald-600/30 hover:shadow-emerald-500/50 transition-all flex items-center justify-center gap-2 cursor-pointer hover:-translate-y-0.5 active:translate-y-0 mt-1"
                     >
-                      <span>Get a Quote</span>
-                      <ArrowRight className="w-4 h-4" />
+                      <WhatsAppIcon className="w-5 h-5 shrink-0" />
+                      <span>Send Booking via WhatsApp</span>
                     </button>
                   </form>
                 </>
@@ -1062,17 +1174,25 @@ export default function Hero() {
               {/* ── STEP 5: Done ── */}
               {step === 'done' && (
                 <div className="text-center py-4">
-                  <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto mb-3" />
-                  <h3 className="text-lg font-extrabold text-slate-900 mb-2">
-                    {formDef?.isInspection ? 'Inspection Request Received!' : 'Quote Request Received!'}
+                  <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-3 shadow-md shadow-emerald-500/10">
+                    <CheckCircle2 className="w-8 h-8 text-emerald-600" />
+                  </div>
+                  <h3 className="text-lg font-extrabold text-slate-900 mb-1">
+                    {formDef?.isInspection ? 'Inspection Request Sent!' : 'Booking Request Sent!'}
                   </h3>
-                  <p className="text-sm text-slate-500 mb-4 leading-relaxed">
-                    Thank you{formData.name ? `, ${formData.name}` : ''}.{' '}
-                    {formDef?.isInspection
-                      ? 'Our team will contact you shortly to confirm your site inspection.'
-                      : 'Our team will contact you shortly.'}
+                  <p className="text-xs text-slate-500 mb-3 leading-relaxed">
+                    Thank you{formData.name ? `, ${formData.name}` : ''}. Your details have been prepared for WhatsApp at{' '}
+                    <a
+                      href={getWhatsAppUrl()}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-bold text-emerald-700 underline hover:text-emerald-800"
+                    >
+                      +94 71 156 9849
+                    </a>.
                   </p>
-                  <div className="text-left text-xs bg-slate-50 border border-slate-200 rounded-xl p-3.5 mb-5 space-y-1 text-slate-700">
+
+                  <div className="text-left text-xs bg-slate-50 border border-slate-200 rounded-xl p-3.5 mb-4 space-y-1 text-slate-700">
                     <div><span className="font-bold">Type:</span> {category === 'residential' ? 'Residential' : 'Corporate'}</div>
                     {formData.companyName && <div><span className="font-bold">Company:</span> {formData.companyName}</div>}
                     {formData.role && <div><span className="font-bold">Authorized Person:</span> {formData.name} ({formData.role})</div>}
@@ -1120,9 +1240,20 @@ export default function Hero() {
                       )
                     })()}
                   </div>
+
+                  <a
+                    href={getWhatsAppUrl()}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-3.5 px-4 bg-[#25D366] hover:bg-[#20bd5a] text-white font-extrabold rounded-2xl shadow-lg shadow-emerald-600/30 hover:shadow-emerald-500/50 transition-all flex items-center justify-center gap-2 cursor-pointer text-sm mb-2.5 hover:-translate-y-0.5 active:translate-y-0"
+                  >
+                    <WhatsAppIcon className="w-5 h-5" />
+                    <span>Send via WhatsApp (+94 71 156 9849)</span>
+                  </a>
+
                   <button
                     onClick={reset}
-                    className="w-full py-3 bg-sky-600 hover:bg-sky-500 text-white font-bold rounded-2xl transition-all cursor-pointer"
+                    className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl transition-all cursor-pointer text-xs"
                   >
                     New Request
                   </button>

@@ -141,7 +141,7 @@ export default function BookingPage({ onBackToHome, initialService = null, initi
       `------------------------------------\n` +
       `Please confirm schedule & provide tailored quotation.`
     )
-    window.open(`https://wa.me/94704906565?text=${text}`, '_blank')
+    window.open(`https://wa.me/94711569849?text=${text}`, '_blank')
   }
 
   return (
