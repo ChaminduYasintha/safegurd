@@ -21,15 +21,27 @@ const ALL_DISTRICTS = [
   'Ratnapura', 'Kegalle',                      // Sabaragamuwa
 ]
 
-// Equipment list (from chart) used in Customized packages
+// Equipment list & pricing used in Customized packages
+export const EQUIPMENT_PRICES = {
+  'Vacuum Cleaner': 2500,
+  'Scrubbing Machine': 6500,
+  'High-Pressure Cleaning Machine': 4500,
+  'Sofa Shampoo Cleaning Machine': 5000,
+  'Steam Cleaning Machine': 4500,
+  'Steam Cleaning': 4500,
+  'Grass Cutting Machine': 5500,
+  'Ladder': 4000,
+  'Ladder 1': 4000,
+}
+
 const EQUIPMENT_OPTIONS = [
-  'Ladder',
   'Vacuum Cleaner',
   'Scrubbing Machine',
   'High-Pressure Cleaning Machine',
   'Sofa Shampoo Cleaning Machine',
-  'Steam Cleaning',
+  'Steam Cleaning Machine',
   'Grass Cutting Machine',
+  'Ladder',
 ]
 
 /* ─────────────────────────────────────────────
@@ -44,13 +56,13 @@ const CATEGORIES = [
 const SUB_SERVICES = {
   residential: [
     { id: 'customized', label: 'Customized Cleaning Package', westernOnly: true, requiresInspection: false },
-    { id: 'longterm', label: 'Long Term Cleaning Agreement', westernOnly: true, requiresInspection: false },
-    { id: 'premium', label: 'Full House / Premises Deep Cleaning', westernOnly: false, requiresInspection: true },
+    { id: 'premium', label: 'Full House Deep Cleaning', westernOnly: false, requiresInspection: true },
+    { id: 'longterm', label: 'Long-Term Cleaning Agreement', westernOnly: true, requiresInspection: false },
   ],
   corporate: [
     { id: 'customized', label: 'Customized Cleaning Package', westernOnly: true, requiresInspection: false },
-    { id: 'longterm', label: 'Long Term Cleaning Agreement', westernOnly: false, requiresInspection: true },
-    { id: 'fullservice', label: 'Full Service / Premium Deep Cleaning', westernOnly: false, requiresInspection: true },
+    { id: 'fullservice', label: 'Full Premises Deep Cleaning', westernOnly: false, requiresInspection: true },
+    { id: 'longterm', label: 'Long-Term Cleaning Agreement', westernOnly: false, requiresInspection: true },
   ],
 }
 
@@ -60,93 +72,139 @@ const SUB_SERVICES = {
 
 const LONGTERM_PRICING = {
   Weekly: {
-    'Within 20 KM': { 'Once (1x)': 27950, 'Twice (2x)': 55900, 'Three Times (3x)': 83850 },
-    'Beyond 20 KM': { 'Once (1x)': 31500, 'Twice (2x)': 63500, 'Three Times (3x)': 94500 },
+    'Within 20 KM': {
+      'Once a Week': 27950,
+      'Twice a Week': 55900,
+      'Three Times a Week': 83850,
+      'Once (1x)': 27950,
+      'Twice (2x)': 55900,
+      'Three Times (3x)': 83850,
+    },
+    'Beyond 20 KM': {
+      'Once a Week': 31500,
+      'Twice a Week': 63500,
+      'Three Times a Week': 94500,
+      'Once (1x)': 31500,
+      'Twice (2x)': 63500,
+      'Three Times (3x)': 94500,
+    },
   },
   Monthly: {
-    'Within 20 KM': { 'Once (1x)': 10500, 'Twice (2x)': 19500 },
-    'Beyond 20 KM': { 'Once (1x)': 12500, 'Twice (2x)': 21500 },
+    'Within 20 KM': {
+      'Once a Month': 10500,
+      'Twice a Month': 19500,
+      'Once (1x)': 10500,
+      'Twice (2x)': 19500,
+    },
+    'Beyond 20 KM': {
+      'Once a Month': 12500,
+      'Twice a Month': 21500,
+      'Once (1x)': 12500,
+      'Twice (2x)': 21500,
+    },
   },
 }
 
 const LONGTERM_TIMES = {
-  Weekly: ['Once (1x)', 'Twice (2x)', 'Three Times (3x)'],
-  Monthly: ['Once (1x)', 'Twice (2x)'],
+  Weekly: ['Once a Week', 'Twice a Week', 'Three Times a Week'],
+  Monthly: ['Once a Month', 'Twice a Month'],
 }
 
 function getLongtermPrice(frequency, times, distance) {
   if (!frequency || !times || !distance) return null
-  return LONGTERM_PRICING[frequency]?.[distance]?.[times] ?? null
+  let distCat = 'Within 20 KM'
+  if (typeof distance === 'number') {
+    distCat = distance <= 20 ? 'Within 20 KM' : 'Beyond 20 KM'
+  } else if (typeof distance === 'string') {
+    distCat = distance.includes('Beyond') ? 'Beyond 20 KM' : 'Within 20 KM'
+  }
+  return LONGTERM_PRICING[frequency]?.[distCat]?.[times] ?? null
 }
 
 /* ─────────────────────────────────────────────
    CUSTOMIZED PACKAGE PRICING
-   * 1 Professional Cleaner, Chemicals & Equipment: 8,500
-   * Additional cleaners charge: 3,000 each
-   * Additional equipment charges: 2,000 each
-   * Transportation charges:
-     - Bike: within 20km = 500 | beyond 20km = 1000
-     - Three-wheeler: within 20km = 1000 | beyond 20km = 1500
-     - Lorry (heavy equipment): within 20km = 2000 | beyond 20km = 2500
-   * 15% profit margin added to total cost
+   * Cleaners:
+     - 1-5 cleaners: Rs. 8,500 each
+     - More than 5 cleaners: Rs. 8,000 each
+   * Equipment:
+     - Vacuum Cleaner: 2,500
+     - Scrubbing Machine: 6,500
+     - High-Pressure Cleaning Machine: 4,500
+     - Sofa Shampoo Cleaning Machine: 5,000
+     - Steam Cleaning Machine: 4,500
+     - Grass Cutting Machine: 5,500
+     - Ladder: 4,000
+   * Transportation Charges:
+     - Within 10km: Rs. 2,000
+     - 20km: Rs. 4,000
+     - 30km: Rs. 6,000
+     - 40km: Rs. 8,000
+     - Each additional 10km: +Rs. 2,000
+     - Equipment Surcharge: +Rs. 2,000 if > 2 machines/ladders required
+   * Profit Margin:
+     - 15% on Total Payment
 ───────────────────────────────────────────── */
 
-const HEAVY_EQUIPMENT = [
-  'Scrubbing Machine',
-  'High-Pressure Cleaning Machine',
-]
-
-const TRANSPORT_RATES = {
-  bike: { 'Within 20 KM': 500, 'Beyond 20 KM': 1000 },
-  threewheeler: { 'Within 20 KM': 1000, 'Beyond 20 KM': 1500 },
-  lorry: { 'Within 20 KM': 2000, 'Beyond 20 KM': 2500 },
+function getTransportationFee(dist) {
+  if (dist === null || dist === undefined) {
+    return { rate: 2000, text: 'Within 10 km', km: 10 }
+  }
+  let km = typeof dist === 'number' ? dist : parseFloat(dist)
+  if (isNaN(km)) {
+    if (typeof dist === 'string' && dist.includes('Beyond')) km = 30
+    else if (typeof dist === 'string' && dist.includes('20')) km = 20
+    else km = 10
+  }
+  const tiers = Math.max(1, Math.ceil(km / 10))
+  const rate = tiers * 2000
+  const maxKm = tiers * 10
+  const text = typeof dist === 'number' ? `${km} km (Within ${maxKm} km)` : `Within ${maxKm} km`
+  return { rate, text, km }
 }
 
 function getCustomizedEstimate(cleanersCount = 1, equipment = [], distance = null) {
   const count = Math.max(1, parseInt(cleanersCount, 10) || 1)
-  const baseCleanerCharge = 8500
-  const additionalCleanersCharge = (count - 1) * 3000
-  const cleanerTotal = baseCleanerCharge + additionalCleanersCharge
+  const ratePerCleaner = count > 5 ? 8000 : 8500
+  const cleanerTotal = count * ratePerCleaner
 
   const eqList = Array.isArray(equipment) ? equipment : []
-  const eqCount = eqList.length
-  const equipmentTotal = eqCount * 2000
+  let equipmentTotal = 0
+  const selectedEquipmentList = []
 
-  // Heavy equipment requires a lorry; medium equipment or 2+ cleaners requires a three-wheeler; else bike
-  const hasHeavy = eqList.some(item => HEAVY_EQUIPMENT.includes(item))
-  let vehicleKey = 'bike'
-  let vehicleName = 'Motorbike'
-  if (hasHeavy) {
-    vehicleKey = 'lorry'
-    vehicleName = 'Lorry (Heavy Equipment)'
-  } else if (eqCount > 0 || count >= 2) {
-    vehicleKey = 'threewheeler'
-    vehicleName = 'Three-Wheeler'
+  for (const item of eqList) {
+    const price = EQUIPMENT_PRICES[item] || 0
+    equipmentTotal += price
+    selectedEquipmentList.push({ name: item, price })
   }
 
-  const transportRate = distance ? (TRANSPORT_RATES[vehicleKey]?.[distance] ?? null) : null
+  // An additional Rs. 2,000 charged on top of transport fee if more than two machines or ladders are required
+  const equipmentSurcharge = eqList.length > 2 ? 2000 : 0
 
-  // Subtotal of costs
-  const costSubtotal = cleanerTotal + equipmentTotal + (transportRate || 0)
-  // 15% profit margin
+  const transportInfo = getTransportationFee(distance)
+  const baseTransportRate = transportInfo.rate
+  const totalTransportRate = baseTransportRate + equipmentSurcharge
+
+  const costSubtotal = cleanerTotal + equipmentTotal + totalTransportRate
   const margin = Math.round(costSubtotal * 0.15)
   const total = costSubtotal + margin
 
   return {
     cleanersCount: count,
-    baseCleanerCharge,
-    additionalCleanersCharge,
+    ratePerCleaner,
     cleanerTotal,
-    eqCount,
+    eqCount: eqList.length,
     equipmentTotal,
-    vehicleKey,
-    vehicleName,
+    selectedEquipmentList,
     distance,
-    transportRate,
+    distanceKm: transportInfo.km,
+    distanceText: transportInfo.text,
+    baseTransportRate,
+    equipmentSurcharge,
+    totalTransportRate,
     costSubtotal,
     margin,
     total,
-    isComplete: Boolean(distance),
+    isComplete: true,
   }
 }
 
@@ -154,7 +212,7 @@ function getCustomizedEstimate(cleanersCount = 1, equipment = [], distance = nul
    FORM DEFINITIONS — words from chart only
 ───────────────────────────────────────────── */
 
-const INSPECTION_NOTE = 'Site inspection required before final quotation.'
+const INSPECTION_NOTE = 'A site inspection is compulsory before providing a quotation.'
 
 const CORPORATE_IDENTITY_FIELDS = [
   { key: 'companyName', label: 'Company Name', type: 'text', placeholder: 'Company name' },
@@ -224,7 +282,7 @@ const FORMS = {
   },
 
   'residential-premium': {
-    title: 'Full House / Premises Deep Cleaning',
+    title: 'Full House Deep Cleaning',
     isInspection: true,
     note: INSPECTION_NOTE,
     fields: [
@@ -280,7 +338,7 @@ const FORMS = {
   },
 
   'corporate-longterm': {
-    title: 'Long Term Cleaning Agreement — Corporate',
+    title: 'Long-Term Cleaning Agreement — Corporate',
     isInspection: true,
     note: INSPECTION_NOTE,
     fields: [
@@ -290,7 +348,7 @@ const FORMS = {
   },
 
   'corporate-fullservice': {
-    title: 'Full Service / Premium Deep Cleaning — Corporate',
+    title: 'Full Premises Deep Cleaning',
     isInspection: true,
     note: INSPECTION_NOTE,
     fields: [
@@ -442,14 +500,18 @@ export default function Hero() {
         )
       }
     } else if (!formDef?.isLongTerm && !formDef?.isInspection && formData.cleanersCount) {
-      const est = getCustomizedEstimate(formData.cleanersCount, formData.equipment, effectiveDist)
+      const distVal = userLocation?.distanceKm || formData.distance || effectiveDist
+      const est = getCustomizedEstimate(formData.cleanersCount, formData.equipment, distVal)
       lines.push(
         `────────────────────────────`,
         `💰 *ESTIMATED TOTAL: LKR ${est.total.toLocaleString()}*`,
-        `• Cleaners (${est.cleanersCount}): LKR ${est.cleanerTotal.toLocaleString()}`,
-        ...(est.equipmentTotal > 0 ? [`• Additional Equipment (${est.eqCount} items): LKR ${est.equipmentTotal.toLocaleString()}`] : []),
-        ...(est.transportRate !== null ? [`• Transport (${est.vehicleName} · ${effectiveDist}): LKR ${est.transportRate.toLocaleString()}`] : []),
-        `• 15% Service Margin: LKR ${est.margin.toLocaleString()}`
+        `• Cleaners (${est.cleanersCount} × LKR ${est.ratePerCleaner.toLocaleString()}): LKR ${est.cleanerTotal.toLocaleString()}`,
+        ...(est.selectedEquipmentList.length > 0
+          ? est.selectedEquipmentList.map(eq => `• ${eq.name}: LKR ${eq.price.toLocaleString()}`)
+          : []),
+        `• Transportation (${est.distanceText}): LKR ${est.baseTransportRate.toLocaleString()}`,
+        ...(est.equipmentSurcharge > 0 ? [`• Equipment Transport Surcharge (> 2 machines/ladders): LKR ${est.equipmentSurcharge.toLocaleString()}`] : []),
+        `• 15% Profit Margin: LKR ${est.margin.toLocaleString()}`
       )
     } else if (formDef?.isInspection) {
       lines.push(
@@ -684,7 +746,7 @@ export default function Hero() {
         })()}
 
         {field.type === 'customized-pricing-display' && (() => {
-          const effectiveDistance = formData.distance || userLocation?.distanceCategory || 'Within 20 KM'
+          const effectiveDistance = userLocation?.distanceKm || formData.distance || userLocation?.distanceCategory || 10
           const est = getCustomizedEstimate(formData.cleanersCount, formData.equipment, effectiveDistance)
           return (
             <div className="rounded-2xl border-2 border-sky-400/50 bg-gradient-to-br from-sky-50 via-white to-emerald-50/50 p-4 shadow-sm space-y-3">
@@ -696,9 +758,10 @@ export default function Hero() {
                   </div>
                   <p className="text-xs text-slate-500 font-medium flex items-center gap-1">
                     <MapPin className="w-3.5 h-3.5 text-sky-600 shrink-0" />
-                    <span>{userLocation?.name || 'Colombo'}:</span>
-                    <span className="font-bold text-slate-700">{userLocation?.distanceKm || 0} km</span>
-                    <span>({effectiveDistance})</span>
+                    <span>{userLocation?.name || 'Kadawatha'}:</span>
+                    <span className="font-bold text-slate-700">
+                      {userLocation?.distanceKm ? `${userLocation.distanceKm} km` : est.distanceText}
+                    </span>
                   </p>
                 </div>
                 <div className="text-right shrink-0">
@@ -714,43 +777,48 @@ export default function Hero() {
                 <div className="flex justify-between items-center">
                   <span className="flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-sky-500 shrink-0" />
-                    <span>1 Professional Cleaner, Chemicals &amp; Equipment</span>
+                    <span>
+                      {est.cleanersCount} Cleaner{est.cleanersCount > 1 ? 's' : ''} with Chemicals &amp; Equipment
+                      <span className="text-[11px] text-slate-400 ml-1">
+                        ({est.cleanersCount} × LKR {est.ratePerCleaner.toLocaleString()}{est.cleanersCount > 5 ? ' - discount rate' : ''})
+                      </span>
+                    </span>
                   </span>
-                  <span className="font-bold text-slate-800">LKR 8,500</span>
+                  <span className="font-bold text-slate-800">LKR {est.cleanerTotal.toLocaleString()}</span>
                 </div>
 
-                {est.additionalCleanersCharge > 0 && (
-                  <div className="flex justify-between items-center text-sky-900">
+                {est.selectedEquipmentList.map(eq => (
+                  <div key={eq.name} className="flex justify-between items-center text-sky-900 pl-3">
                     <span className="flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-sky-500 shrink-0" />
-                      <span>Additional Cleaners ({est.cleanersCount - 1} × LKR 3,000)</span>
+                      <span className="w-1 h-1 rounded-full bg-sky-400 shrink-0" />
+                      <span>{eq.name}</span>
                     </span>
-                    <span className="font-bold">+ LKR {est.additionalCleanersCharge.toLocaleString()}</span>
+                    <span className="font-semibold text-slate-700">+ LKR {eq.price.toLocaleString()}</span>
                   </div>
-                )}
-
-                {est.equipmentTotal > 0 && (
-                  <div className="flex justify-between items-center text-sky-900">
-                    <span className="flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-sky-500 shrink-0" />
-                      <span>Additional Equipment ({est.eqCount} {est.eqCount === 1 ? 'item' : 'items'} × LKR 2,000)</span>
-                    </span>
-                    <span className="font-bold">+ LKR {est.equipmentTotal.toLocaleString()}</span>
-                  </div>
-                )}
+                ))}
 
                 <div className="flex justify-between items-center">
                   <span className="flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-sky-500 shrink-0" />
-                    <span>Transportation ({est.vehicleName})</span>
+                    <span>Transportation ({est.distanceText})</span>
                   </span>
                   <span className="font-bold text-slate-800">
-                    + LKR {(est.transportRate || 0).toLocaleString()}
+                    + LKR {est.baseTransportRate.toLocaleString()}
                   </span>
                 </div>
 
+                {est.equipmentSurcharge > 0 && (
+                  <div className="flex justify-between items-center text-amber-800 bg-amber-50/80 px-2.5 py-1.5 rounded-xl border border-amber-200/60">
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
+                      <span>Equipment Transport Surcharge (&gt; 2 machines/ladders)</span>
+                    </span>
+                    <span className="font-bold">+ LKR {est.equipmentSurcharge.toLocaleString()}</span>
+                  </div>
+                )}
+
                 <div className="flex justify-between items-center pt-1.5 border-t border-slate-100 text-[11px] text-slate-500">
-                  <span>Service Fee</span>
+                  <span>15% Profit Margin</span>
                   <span className="font-semibold text-slate-700">+ LKR {est.margin.toLocaleString()}</span>
                 </div>
               </div>
@@ -773,18 +841,31 @@ export default function Hero() {
         )}
 
         {field.type === 'checks' && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-            {field.options.map(opt => (
-              <label key={opt} className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-slate-50 rounded-lg px-2 py-1 transition-colors">
-                <input
-                  type="checkbox"
-                  checked={Array.isArray(formData[field.key]) && formData[field.key].includes(opt)}
-                  onChange={e => handleCheck(field.key, opt, e.target.checked)}
-                  className="rounded accent-sky-600 shrink-0"
-                />
-                {opt}
-              </label>
-            ))}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {field.options.map(opt => {
+              const price = EQUIPMENT_PRICES[opt]
+              return (
+                <label
+                  key={opt}
+                  className="flex items-center justify-between gap-2 text-xs text-slate-700 cursor-pointer hover:bg-sky-50/60 rounded-xl px-2.5 py-2 border border-slate-200/80 bg-white transition-all shadow-2xs"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <input
+                      type="checkbox"
+                      checked={Array.isArray(formData[field.key]) && formData[field.key].includes(opt)}
+                      onChange={e => handleCheck(field.key, opt, e.target.checked)}
+                      className="rounded accent-sky-600 shrink-0 w-3.5 h-3.5"
+                    />
+                    <span className="font-bold text-slate-800 truncate">{opt}</span>
+                  </div>
+                  {price && (
+                    <span className="text-[10px] font-extrabold text-sky-700 bg-sky-50 border border-sky-100 px-1.5 py-0.5 rounded-md shrink-0">
+                      + LKR {price.toLocaleString()}
+                    </span>
+                  )}
+                </label>
+              )
+            })}
           </div>
         )}
 
@@ -1099,7 +1180,7 @@ export default function Hero() {
                   )}
 
                   {!formDef.isLongTerm && formData.cleanersCount && (() => {
-                    const effectiveDist = formData.distance || userLocation?.distanceCategory || 'Within 20 KM'
+                    const effectiveDist = userLocation?.distanceKm || formData.distance || userLocation?.distanceCategory || 10
                     const est = getCustomizedEstimate(formData.cleanersCount, formData.equipment, effectiveDist)
                     return (
                       <div className="px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-sky-50 to-emerald-50/70 border border-sky-200 text-xs text-sky-950 font-semibold mb-3 space-y-1">
@@ -1115,10 +1196,10 @@ export default function Hero() {
                         </div>
                         <div className="flex items-center justify-between text-[11px] text-slate-600">
                           <span>
-                            {est.vehicleName} · {effectiveDist} ({userLocation?.distanceKm || 0} km)
+                            Transport: {est.distanceText}
                             {formData.equipment?.length > 0 ? ` · ${formData.equipment.length} equipment items` : ''}
                           </span>
-                          <span className="text-[10px] text-slate-500 font-medium">Incl. 15% margin</span>
+                          <span className="text-[10px] text-slate-500 font-medium">Incl. 15% profit margin</span>
                         </div>
                       </div>
                     )
@@ -1189,7 +1270,7 @@ export default function Hero() {
                       </div>
                     )}
                     {!formDef?.isLongTerm && !formDef?.isInspection && formData.cleanersCount && (() => {
-                      const effectiveDist = formData.distance || userLocation?.distanceCategory || 'Within 20 KM'
+                      const effectiveDist = userLocation?.distanceKm || formData.distance || userLocation?.distanceCategory || 10
                       const est = getCustomizedEstimate(formData.cleanersCount, formData.equipment, effectiveDist)
                       return (
                         <div className="pt-2 border-t border-slate-200 space-y-1">
@@ -1198,10 +1279,11 @@ export default function Hero() {
                             <span>LKR {est.total.toLocaleString()}</span>
                           </div>
                           <div className="text-[11px] text-slate-500 space-y-0.5">
-                            <div>• Cleaners ({est.cleanersCount}): LKR {est.cleanerTotal.toLocaleString()}</div>
+                            <div>• Cleaners ({est.cleanersCount} × LKR {est.ratePerCleaner.toLocaleString()}): LKR {est.cleanerTotal.toLocaleString()}</div>
                             {est.equipmentTotal > 0 && <div>• Additional Equipment ({est.eqCount} items): LKR {est.equipmentTotal.toLocaleString()}</div>}
-                            {est.transportRate !== null && <div>• Transport ({est.vehicleName} · {effectiveDist}): LKR {est.transportRate.toLocaleString()}</div>}
-                            <div>• 15% Service Margin: LKR {est.margin.toLocaleString()}</div>
+                            <div>• Transportation ({est.distanceText}): LKR {est.baseTransportRate.toLocaleString()}</div>
+                            {est.equipmentSurcharge > 0 && <div>• Equipment Transport Surcharge (&gt; 2 machines/ladders): LKR {est.equipmentSurcharge.toLocaleString()}</div>}
+                            <div>• 15% Profit Margin: LKR {est.margin.toLocaleString()}</div>
                           </div>
                         </div>
                       )

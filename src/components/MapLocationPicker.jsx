@@ -1,16 +1,13 @@
-import { useState, useEffect, useRef } from 'react'
-import L from 'leaflet'
-import 'leaflet/dist/leaflet.css'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import {
   MapPin,
   Search,
   Navigation,
   CheckCircle2,
   AlertCircle,
-  Sparkles,
   Loader2,
-  Compass,
 } from 'lucide-react'
+import { loadGoogleMaps } from '../utils/googleMapsLoader'
 
 /* ─────────────────────────────────────────────
    SERVICE HUB COORDINATES (KADAWATHA)
@@ -25,6 +22,8 @@ export const COLOMBO_HUB = {
   district: 'Gampaha',
   province: 'Western Province',
 }
+
+const WESTERN_DISTRICTS = ['Colombo', 'Gampaha', 'Kalutara']
 
 /* ─────────────────────────────────────────────
    HAVERSINE DISTANCE FORMULA (KM)
@@ -44,10 +43,10 @@ export function calculateDistanceKm(lat1, lon1, lat2, lon2) {
 }
 
 /* ─────────────────────────────────────────────
-   SRI LANKA TOWNS DATABASE
+   SRI LANKA TOWNS DATABASE (FAST LOCAL CACHE)
 ───────────────────────────────────────────── */
 export const SRI_LANKA_LOCATIONS = [
-  // Colombo District (Western Province)
+  // Colombo District
   { name: 'Colombo Fort / CBD', district: 'Colombo', province: 'Western Province', lat: 6.9344, lng: 79.8428 },
   { name: 'Kollupitiya (Colombo 03)', district: 'Colombo', province: 'Western Province', lat: 6.9056, lng: 79.8519 },
   { name: 'Bambalapitiya (Colombo 04)', district: 'Colombo', province: 'Western Province', lat: 6.8926, lng: 79.8569 },
@@ -63,11 +62,11 @@ export const SRI_LANKA_LOCATIONS = [
   { name: 'Dehiwala', district: 'Colombo', province: 'Western Province', lat: 6.8533, lng: 79.8656 },
   { name: 'Mount Lavinia', district: 'Colombo', province: 'Western Province', lat: 6.8344, lng: 79.8653 },
   { name: 'Ratmalana', district: 'Colombo', province: 'Western Province', lat: 6.8197, lng: 79.8822 },
-  { name: 'Moratuwa', district: 'Colombo', province: 'Western Province', lat: 6.7730, lng: 79.8816 },
+  { name: 'Moratuwa', district: 'Colombo', province: 'Western Province', lat: 6.773, lng: 79.8816 },
   { name: 'Battaramulla', district: 'Colombo', province: 'Western Province', lat: 6.8986, lng: 79.9192 },
   { name: 'Pelawatta', district: 'Colombo', province: 'Western Province', lat: 6.8911, lng: 79.9317 },
   { name: 'Sri Jayawardenepura Kotte', district: 'Colombo', province: 'Western Province', lat: 6.8906, lng: 79.9011 },
-  { name: 'Maharagama', district: 'Colombo', province: 'Western Province', lat: 6.8480, lng: 79.9265 },
+  { name: 'Maharagama', district: 'Colombo', province: 'Western Province', lat: 6.848, lng: 79.9265 },
   { name: 'Pannipitiya', district: 'Colombo', province: 'Western Province', lat: 6.8456, lng: 79.9547 },
   { name: 'Kottawa', district: 'Colombo', province: 'Western Province', lat: 6.8419, lng: 79.9658 },
   { name: 'Homagama', district: 'Colombo', province: 'Western Province', lat: 6.8433, lng: 80.0031 },
@@ -77,11 +76,8 @@ export const SRI_LANKA_LOCATIONS = [
   { name: 'Piliyandala', district: 'Colombo', province: 'Western Province', lat: 6.8017, lng: 79.9228 },
   { name: 'Kesbewa', district: 'Colombo', province: 'Western Province', lat: 6.7869, lng: 79.9489 },
   { name: 'Kolonnawa', district: 'Colombo', province: 'Western Province', lat: 6.9372, lng: 79.8931 },
-  { name: 'Padukka', district: 'Colombo', province: 'Western Province', lat: 6.8483, lng: 80.1039 },
-  { name: 'Hanwella', district: 'Colombo', province: 'Western Province', lat: 6.8953, lng: 80.0828 },
-  { name: 'Avissawella', district: 'Colombo', province: 'Western Province', lat: 6.9539, lng: 80.2106 },
 
-  // Gampaha District (Western Province)
+  // Gampaha District
   { name: 'Kelaniya', district: 'Gampaha', province: 'Western Province', lat: 6.9553, lng: 79.9228 },
   { name: 'Peliyagoda', district: 'Gampaha', province: 'Western Province', lat: 6.9647, lng: 79.8894 },
   { name: 'Wattala', district: 'Gampaha', province: 'Western Province', lat: 6.9897, lng: 79.8922 },
@@ -95,47 +91,31 @@ export const SRI_LANKA_LOCATIONS = [
   { name: 'Seeduwa', district: 'Gampaha', province: 'Western Province', lat: 7.1264, lng: 79.8711 },
   { name: 'Katunayake', district: 'Gampaha', province: 'Western Province', lat: 7.1694, lng: 79.8886 },
   { name: 'Negombo', district: 'Gampaha', province: 'Western Province', lat: 7.2083, lng: 79.8358 },
-  { name: 'Kochchikade', district: 'Gampaha', province: 'Western Province', lat: 7.2606, lng: 79.8667 },
   { name: 'Biyagama', district: 'Gampaha', province: 'Western Province', lat: 6.9406, lng: 79.9769 },
   { name: 'Delgoda', district: 'Gampaha', province: 'Western Province', lat: 6.9944, lng: 79.9917 },
   { name: 'Gampaha Town', district: 'Gampaha', province: 'Western Province', lat: 7.0917, lng: 79.9997 },
   { name: 'Yakkala', district: 'Gampaha', province: 'Western Province', lat: 7.0861, lng: 80.0333 },
   { name: 'Nittambuwa', district: 'Gampaha', province: 'Western Province', lat: 7.1439, lng: 80.0986 },
-  { name: 'Minuwangoda', district: 'Gampaha', province: 'Western Province', lat: 7.1683, lng: 79.9539 },
-  { name: 'Mirigama', district: 'Gampaha', province: 'Western Province', lat: 7.2433, lng: 80.1294 },
 
-  // Kalutara District (Western Province)
+  // Kalutara District
   { name: 'Panadura', district: 'Kalutara', province: 'Western Province', lat: 6.7131, lng: 79.9075 },
   { name: 'Wadduwa', district: 'Kalutara', province: 'Western Province', lat: 6.6667, lng: 79.9333 },
   { name: 'Kalutara Town', district: 'Kalutara', province: 'Western Province', lat: 6.5854, lng: 79.9607 },
   { name: 'Beruwala', district: 'Kalutara', province: 'Western Province', lat: 6.4789, lng: 79.9828 },
-  { name: 'Aluthgama', district: 'Kalutara', province: 'Western Province', lat: 6.4319, lng: 80.0031 },
   { name: 'Horana', district: 'Kalutara', province: 'Western Province', lat: 6.7147, lng: 80.0628 },
   { name: 'Bandaragama', district: 'Kalutara', province: 'Western Province', lat: 6.7167, lng: 79.9833 },
-  { name: 'Matugama', district: 'Kalutara', province: 'Western Province', lat: 6.5222, lng: 80.1147 },
-  { name: 'Ingiriya', district: 'Kalutara', province: 'Western Province', lat: 6.7417, lng: 80.1667 },
 
-  // Outstation / Other Provinces
+  // Outstation Major Cities & Towns
   { name: 'Kandy Town', district: 'Kandy', province: 'Central', lat: 7.2906, lng: 80.6337 },
-  { name: 'Peradeniya', district: 'Kandy', province: 'Central', lat: 7.2600, lng: 80.5975 },
-  { name: 'Matale', district: 'Matale', province: 'Central', lat: 7.4675, lng: 80.6234 },
-  { name: 'Nuwara Eliya', district: 'Nuwara Eliya', province: 'Central', lat: 6.9497, lng: 80.7891 },
-  { name: 'Galle Town', district: 'Galle', province: 'Southern', lat: 6.0535, lng: 80.2210 },
-  { name: 'Hikkaduwa', district: 'Galle', province: 'Southern', lat: 6.1394, lng: 80.1006 },
-  { name: 'Matara Town', district: 'Matara', province: 'Southern', lat: 5.9549, lng: 80.5550 },
-  { name: 'Hambantota', district: 'Hambantota', province: 'Southern', lat: 6.1248, lng: 81.1185 },
+  { name: 'Kundasale', district: 'Kandy', province: 'Central', lat: 7.2805, lng: 80.6845 },
+  { name: 'Peradeniya', district: 'Kandy', province: 'Central', lat: 7.26, lng: 80.5975 },
+  { name: 'Katugastota', district: 'Kandy', province: 'Central', lat: 7.3278, lng: 80.6214 },
+  { name: 'Galle Town', district: 'Galle', province: 'Southern', lat: 6.0535, lng: 80.221 },
+  { name: 'Matara Town', district: 'Matara', province: 'Southern', lat: 5.9549, lng: 80.555 },
   { name: 'Kurunegala Town', district: 'Kurunegala', province: 'North Western', lat: 7.4863, lng: 80.3623 },
-  { name: 'Chilaw', district: 'Puttalam', province: 'North Western', lat: 7.5758, lng: 79.7953 },
-  { name: 'Puttalam Town', district: 'Puttalam', province: 'North Western', lat: 8.0362, lng: 79.8283 },
-  { name: 'Anuradhapura', district: 'Anuradhapura', province: 'North Central', lat: 8.3114, lng: 80.4037 },
-  { name: 'Polonnaruwa', district: 'Polonnaruwa', province: 'North Central', lat: 7.9403, lng: 81.0188 },
   { name: 'Ratnapura', district: 'Ratnapura', province: 'Sabaragamuwa', lat: 6.6828, lng: 80.4018 },
-  { name: 'Kegalle', district: 'Kegalle', province: 'Sabaragamuwa', lat: 7.2514, lng: 80.3464 },
-  { name: 'Badulla', district: 'Badulla', province: 'Uva', lat: 6.9934, lng: 81.0550 },
-  { name: 'Bandarawela', district: 'Badulla', province: 'Uva', lat: 6.8258, lng: 80.9981 },
+  { name: 'Anuradhapura', district: 'Anuradhapura', province: 'North Central', lat: 8.3114, lng: 80.4037 },
   { name: 'Jaffna', district: 'Jaffna', province: 'Northern', lat: 9.6615, lng: 80.0255 },
-  { name: 'Trincomalee', district: 'Trincomalee', province: 'Eastern', lat: 8.5874, lng: 81.2152 },
-  { name: 'Batticaloa', district: 'Batticaloa', province: 'Eastern', lat: 7.7102, lng: 81.6924 },
 ]
 
 export function findNearestLocation(lat, lng) {
@@ -150,11 +130,10 @@ export function findNearestLocation(lat, lng) {
     }
   }
 
-  // Western Province bounding box check:
-  const isWithinWesternBox = lat >= 6.35 && lat <= 7.35 && lng >= 79.80 && lng <= 80.25
+  const isWithinWesternBox = lat >= 6.35 && lat <= 7.35 && lng >= 79.8 && lng <= 80.25
   const isWestern =
     nearest.province === 'Western Province' ||
-    (isWithinWesternBox && ['Colombo', 'Gampaha', 'Kalutara'].includes(nearest.district))
+    (isWithinWesternBox && WESTERN_DISTRICTS.includes(nearest.district))
 
   return {
     nearestTown: nearest.name,
@@ -166,42 +145,87 @@ export function findNearestLocation(lat, lng) {
 }
 
 /* ─────────────────────────────────────────────
-   CUSTOM VECTOR LEAFLET ICONS
+   AUTOCOMPLETE ENGINE (ONLINE + LOCAL)
 ───────────────────────────────────────────── */
-const createPinIcon = (label = 'Your Location') =>
-  L.divIcon({
-    className: 'custom-user-pin',
-    html: `
-      <div style="position: relative; display: flex; flex-direction: column; align-items: center; cursor: grab;">
-        <div style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); width: 34px; height: 34px; border-radius: 50%; border: 3px solid #ffffff; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.45); display: flex; align-items: center; justify-content: center; color: white;">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
-            <circle cx="12" cy="10" r="3" fill="#ffffff"/>
-          </svg>
-        </div>
-        <div style="width: 8px; height: 8px; background: #0369a1; transform: rotate(45deg); margin-top: -4px;"></div>
-      </div>
-    `,
-    iconSize: [34, 42],
-    iconAnchor: [17, 40],
-  })
+async function searchSriLankaAddresses(query) {
+  if (!query || query.trim().length < 2) return []
 
-const createHubIcon = () =>
-  L.divIcon({
-    className: 'custom-hub-pin',
-    html: `
-      <div style="position: relative; display: flex; flex-direction: column; align-items: center; cursor: pointer;">
-        <div style="background: #0f172a; width: 30px; height: 30px; border-radius: 50%; border: 2.5px solid #38bdf8; box-shadow: 0 3px 10px rgba(15, 23, 42, 0.5); display: flex; align-items: center; justify-content: center; color: #38bdf8; font-size: 14px; font-weight: 900;">
-          ★
-        </div>
-        <div style="position: absolute; top: -19px; white-space: nowrap; background: #0f172a; color: #38bdf8; font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 6px; border: 1px solid #38bdf8; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
-          Kadawatha Hub
-        </div>
-      </div>
-    `,
-    iconSize: [30, 30],
-    iconAnchor: [15, 15],
-  })
+  const q = query.trim().toLowerCase()
+
+  // 1. Instant local matches
+  const localMatches = SRI_LANKA_LOCATIONS.filter(
+    loc => loc.name.toLowerCase().includes(q) || loc.district.toLowerCase().includes(q)
+  ).map(loc => ({
+    name: loc.name,
+    secondary: `${loc.district}, ${loc.province}`,
+    lat: loc.lat,
+    lng: loc.lng,
+    district: loc.district,
+    province: loc.province,
+    isWestern: loc.province === 'Western Province' || WESTERN_DISTRICTS.includes(loc.district),
+  }))
+
+  // 2. Online search for any street, suburb, or landmark in Sri Lanka
+  try {
+    const res = await fetch(
+      `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&lat=6.9271&lon=79.8612&limit=8`
+    )
+    if (!res.ok) return localMatches.slice(0, 5)
+
+    const data = await res.json()
+    const features = data.features || []
+
+    const onlineMatches = features
+      .filter(f => {
+        const props = f.properties || {}
+        return (
+          props.countrycode === 'LK' ||
+          (props.country && (props.country.includes('ශ්‍රී ලංකාව') || props.country.includes('Sri Lanka')))
+        )
+      })
+      .map(f => {
+        const p = f.properties
+        const [lng, lat] = f.geometry.coordinates
+
+        const primary = p.name || p.street || p.city || query
+        const secondaryParts = [p.street, p.city || p.district, p.county, p.state].filter(
+          item => item && item !== primary
+        )
+        const secondary = secondaryParts.join(', ')
+
+        const districtStr = (p.county || p.city || '').replace(' District', '')
+        const fallback = findNearestLocation(lat, lng)
+        const finalDistrict = districtStr || fallback.district
+        const finalProvince = (p.state || fallback.province).replace(' Province', '') + ' Province'
+        const isWestern =
+          finalProvince.includes('Western') ||
+          WESTERN_DISTRICTS.includes(finalDistrict) ||
+          fallback.isWestern
+
+        return {
+          name: primary,
+          secondary: secondary || `${finalDistrict}, ${finalProvince}`,
+          lat,
+          lng,
+          district: finalDistrict,
+          province: isWestern ? 'Western Province' : finalProvince,
+          isWestern,
+        }
+      })
+
+    // Combine and deduplicate
+    const combined = [...onlineMatches]
+    for (const lm of localMatches) {
+      if (!combined.some(c => calculateDistanceKm(c.lat, c.lng, lm.lat, lm.lng) < 2)) {
+        combined.push(lm)
+      }
+    }
+
+    return combined.slice(0, 6)
+  } catch {
+    return localMatches.slice(0, 5)
+  }
+}
 
 /* ─────────────────────────────────────────────
    COMPONENT: MapLocationPicker
@@ -212,250 +236,437 @@ export default function MapLocationPicker({
   category = 'residential',
 }) {
   const [currentLoc, setCurrentLoc] = useState(initialLocation)
-  const [searchQuery, setSearchQuery] = useState('')
+  const [searchQuery, setSearchQuery] = useState(initialLocation?.address || initialLocation?.name || '')
   const [suggestions, setSuggestions] = useState([])
-  const [isSearchingOnline, setIsSearchingOnline] = useState(false)
+  const [showSuggestions, setShowSuggestions] = useState(false)
+  const [isMapLoading, setIsMapLoading] = useState(true)
+  const [loadError, setLoadError] = useState(null)
+  const [isSearching, setIsSearching] = useState(false)
   const [isLocatingGPS, setIsLocatingGPS] = useState(false)
-  const [gpsError, setGpsError] = useState(null)
+  const [statusMessage, setStatusMessage] = useState(null)
 
+  const isUserTypingRef = useRef(false)
   const mapContainerRef = useRef(null)
+  const searchContainerRef = useRef(null)
   const mapInstanceRef = useRef(null)
-  const userMarkerRef = useRef(null)
+  const markerRef = useRef(null)
+  const hubMarkerRef = useRef(null)
   const circleRef = useRef(null)
+  const geocoderRef = useRef(null)
 
-  // Notify parent of location changes
-  const applyLocation = (lat, lng, label = null, districtOverride = null) => {
-    const distKm = calculateDistanceKm(COLOMBO_HUB.lat, COLOMBO_HUB.lng, lat, lng)
-    const distCat = distKm <= 20.0 ? 'Within 20 KM' : 'Beyond 20 KM'
-    const match = findNearestLocation(lat, lng)
+  // Parse Google Geocoder address components
+  const parseAddressComponents = (addressComponents, lat, lng, formattedAddress) => {
+    let district = null
+    let province = null
+    let locality = null
+    let sublocality = null
+    let route = null
 
-    const finalDistrict = districtOverride || match.district
-    const finalProvince = match.isWestern ? 'Western Province' : match.province
-    const finalName = label || (match.distanceFromNearestTown < 1.5 ? match.nearestTown : `${match.nearestTown} area`)
+    if (Array.isArray(addressComponents)) {
+      for (const comp of addressComponents) {
+        const types = comp.types || []
+        if (types.includes('administrative_area_level_2')) {
+          district = comp.long_name.replace(' District', '')
+        }
+        if (types.includes('administrative_area_level_1')) {
+          province = comp.long_name
+        }
+        if (types.includes('locality')) {
+          locality = comp.long_name
+        }
+        if (types.includes('sublocality') || types.includes('sublocality_level_1')) {
+          sublocality = comp.long_name
+        }
+        if (types.includes('route')) {
+          route = comp.long_name
+        }
+      }
+    }
 
-    const locData = {
-      name: finalName,
-      address: finalName,
-      lat,
-      lng,
+    const fallback = findNearestLocation(lat, lng)
+    const finalDistrict = district || fallback.district
+    const finalProvince = province || fallback.province
+
+    const isWestern =
+      finalProvince.toLowerCase().includes('western') ||
+      WESTERN_DISTRICTS.includes(finalDistrict) ||
+      fallback.isWestern
+
+    const primaryName = sublocality || locality || route || fallback.nearestTown
+    const cleanAddress = formattedAddress
+      ? formattedAddress.replace(', Sri Lanka', '').trim()
+      : `${primaryName}, ${finalDistrict}`
+
+    return {
       district: finalDistrict,
-      province: finalProvince,
-      isWestern: match.isWestern,
-      distanceKm: distKm,
-      distanceCategory: distCat,
-    }
-
-    setCurrentLoc(locData)
-    if (onLocationSelect) {
-      onLocationSelect(locData)
-    }
-
-    // Create or move marker & pan map
-    if (userMarkerRef.current) {
-      userMarkerRef.current.setLatLng([lat, lng])
-    } else if (mapInstanceRef.current) {
-      const marker = L.marker([lat, lng], {
-        icon: createPinIcon(),
-        draggable: true,
-      }).addTo(mapInstanceRef.current)
-
-      marker.on('dragend', e => {
-        const pos = e.target.getLatLng()
-        applyLocation(pos.lat, pos.lng)
-      })
-
-      userMarkerRef.current = marker
-    }
-
-    if (mapInstanceRef.current) {
-      mapInstanceRef.current.panTo([lat, lng], { animate: true })
+      province: isWestern ? 'Western Province' : finalProvince,
+      isWestern,
+      name: primaryName,
+      address: cleanAddress,
     }
   }
 
-  // Initialize Leaflet Map
+  // Update location and notify parent
+  const handleLocationUpdate = useCallback(
+    (lat, lng, addressInfo = {}) => {
+      const distKm = calculateDistanceKm(COLOMBO_HUB.lat, COLOMBO_HUB.lng, lat, lng)
+      const distCat = distKm <= 20.0 ? 'Within 20 KM' : 'Beyond 20 KM'
+
+      const locData = {
+        name: addressInfo.name || `${lat.toFixed(4)}, ${lng.toFixed(4)}`,
+        address: addressInfo.address || addressInfo.name || `${lat.toFixed(4)}, ${lng.toFixed(4)}`,
+        lat,
+        lng,
+        district: addressInfo.district || 'Colombo',
+        province: addressInfo.province || 'Western Province',
+        isWestern: Boolean(addressInfo.isWestern),
+        distanceKm: distKm,
+        distanceCategory: distCat,
+      }
+
+      setCurrentLoc(locData)
+      isUserTypingRef.current = false
+      setShowSuggestions(false)
+      setSuggestions([])
+      if (addressInfo.name || addressInfo.address) {
+        setSearchQuery(addressInfo.name || addressInfo.address)
+      }
+
+      if (onLocationSelect) {
+        onLocationSelect(locData)
+      }
+
+      if (markerRef.current && (window.google?.maps || mapInstanceRef.current)) {
+        markerRef.current.setPosition({ lat, lng })
+        markerRef.current.setVisible(true)
+      }
+    },
+    [onLocationSelect]
+  )
+
+  // Reverse geocode coordinates to an address
+  const reverseGeocode = useCallback(
+    (lat, lng) => {
+      if (!geocoderRef.current) return
+      setIsSearching(true)
+      setStatusMessage(null)
+
+      geocoderRef.current.geocode({ location: { lat, lng } }, (results, status) => {
+        setIsSearching(false)
+        if (status === 'OK' && results && results[0]) {
+          const res = results[0]
+          const parsed = parseAddressComponents(res.address_components, lat, lng, res.formatted_address)
+          handleLocationUpdate(lat, lng, parsed)
+        } else {
+          const fallback = findNearestLocation(lat, lng)
+          handleLocationUpdate(lat, lng, {
+            name: fallback.nearestTown,
+            address: `${fallback.nearestTown}, ${fallback.district}`,
+            district: fallback.district,
+            province: fallback.province,
+            isWestern: fallback.isWestern,
+          })
+        }
+      })
+    },
+    [handleLocationUpdate]
+  )
+
+  // Initialize Google Maps
   useEffect(() => {
-    if (!mapContainerRef.current) return
-    if (mapInstanceRef.current) return // already initialized
+    let isMounted = true
+    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
 
-    const initialCenter = currentLoc
-      ? [currentLoc.lat, currentLoc.lng]
-      : [COLOMBO_HUB.lat, COLOMBO_HUB.lng]
+    if (!apiKey) {
+      setLoadError('Google Maps API key is missing. Please configure VITE_GOOGLE_MAPS_API_KEY in your .env file.')
+      setIsMapLoading(false)
+      return
+    }
 
-    const map = L.map(mapContainerRef.current, {
-      center: initialCenter,
-      zoom: 11,
-      zoomControl: false,
-      attributionControl: false,
-    })
+    loadGoogleMaps(apiKey)
+      .then(googleObj => {
+        if (!isMounted || !mapContainerRef.current) return
 
-    // Add minimal zoom control to bottom right
-    L.control.zoom({ position: 'bottomright' }).addTo(map)
+        const maps = window.google?.maps || googleObj?.maps || googleObj
+        if (!maps || !maps.Geocoder || !maps.Map) {
+          throw new Error('Google Maps components could not be loaded.')
+        }
 
-    // OpenStreetMap tile layer
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 18,
-    }).addTo(map)
+        setIsMapLoading(false)
+        geocoderRef.current = new maps.Geocoder()
 
-    // 20 KM radius circle around Kadawatha Hub
-    const circle = L.circle([COLOMBO_HUB.lat, COLOMBO_HUB.lng], {
-      radius: 20000,
-      color: '#0284c7',
-      weight: 2,
-      dashArray: '5, 5',
-      fillColor: '#38bdf8',
-      fillOpacity: 0.12,
-    }).addTo(map)
-    circleRef.current = circle
+        const centerLat = currentLoc ? currentLoc.lat : COLOMBO_HUB.lat
+        const centerLng = currentLoc ? currentLoc.lng : COLOMBO_HUB.lng
 
-    // Kadawatha Service Hub Pin with popup
-    L.marker([COLOMBO_HUB.lat, COLOMBO_HUB.lng], {
-      icon: createHubIcon(),
-    })
-      .bindPopup(
-        `<div style="font-family: sans-serif; font-size: 12px; line-height: 1.4; padding: 2px;">
-          <div style="font-weight: 800; color: #0369a1;">★ Safeguard Service Hub</div>
-          <div style="color: #334155; margin-top: 3px; font-size: 11px; font-weight: 600;">14/1/A, Kandy Road, Kadawatha</div>
-          <div style="color: #64748b; font-size: 10px; margin-top: 2px;">Central Service Hub (20 km Radius origin)</div>
-        </div>`
-      )
-      .addTo(map)
+        const map = new maps.Map(mapContainerRef.current, {
+          center: { lat: centerLat, lng: centerLng },
+          zoom: currentLoc ? 12 : 11,
+          disableDefaultUI: true,
+          zoomControl: true,
+          mapTypeControl: false,
+          streetViewControl: false,
+          fullscreenControl: false,
+        })
+        mapInstanceRef.current = map
 
-    // Customer Location Draggable Marker (if already provided)
-    if (currentLoc) {
-      const marker = L.marker([currentLoc.lat, currentLoc.lng], {
-        icon: createPinIcon(),
-        draggable: true,
-      }).addTo(map)
+        // 20 KM Service Radius Circle
+        const circle = new maps.Circle({
+          strokeColor: '#0284c7',
+          strokeOpacity: 0.85,
+          strokeWeight: 2,
+          fillColor: '#38bdf8',
+          fillOpacity: 0.12,
+          map,
+          center: { lat: COLOMBO_HUB.lat, lng: COLOMBO_HUB.lng },
+          radius: 20000,
+        })
+        circleRef.current = circle
 
-      marker.on('dragend', e => {
-        const pos = e.target.getLatLng()
-        applyLocation(pos.lat, pos.lng)
+        // Custom Hub Icon
+        const hubIcon = {
+          url:
+            'data:image/svg+xml;charset=UTF-8,' +
+            encodeURIComponent(`
+              <svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 34 34">
+                <circle cx="17" cy="17" r="15" fill="#0f172a" stroke="#38bdf8" stroke-width="2.5"/>
+                <path d="M17 7.5l2.7 5.7 6.3.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2-4.5-4.4 6.3-.9z" fill="#38bdf8"/>
+              </svg>
+            `),
+          scaledSize: new maps.Size(34, 34),
+          anchor: new maps.Point(17, 17),
+        }
+
+        // Custom User Pin Icon
+        const userPinIcon = {
+          url:
+            'data:image/svg+xml;charset=UTF-8,' +
+            encodeURIComponent(`
+              <svg xmlns="http://www.w3.org/2000/svg" width="38" height="48" viewBox="0 0 38 48">
+                <defs>
+                  <filter id="dropshadow" x="-20%" y="-10%" width="140%" height="130%">
+                    <feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#0284c7" flood-opacity="0.45"/>
+                  </filter>
+                </defs>
+                <path d="M19 2C10.7 2 4 8.7 4 17c0 12 15 28 15 28s15-16 15-28c0-8.3-6.7-15-15-15z" fill="#0284c7" stroke="#ffffff" stroke-width="2.5" filter="url(#dropshadow)"/>
+                <circle cx="19" cy="17" r="6" fill="#ffffff"/>
+              </svg>
+            `),
+          scaledSize: new maps.Size(38, 48),
+          anchor: new maps.Point(19, 46),
+        }
+
+        // Hub Marker
+        const hubMarker = new maps.Marker({
+          position: { lat: COLOMBO_HUB.lat, lng: COLOMBO_HUB.lng },
+          map,
+          title: 'Safeguard Service Hub (Kadawatha)',
+          icon: hubIcon,
+          zIndex: 1,
+        })
+        hubMarkerRef.current = hubMarker
+
+        const hubInfoWindow = new maps.InfoWindow({
+          content: `
+            <div style="font-family: inherit; font-size: 12px; line-height: 1.4; padding: 2px 4px;">
+              <div style="font-weight: 800; color: #0369a1;">★ Safeguard Service Hub</div>
+              <div style="color: #334155; margin-top: 3px; font-weight: 600;">14/1/A, Kandy Road, Kadawatha</div>
+              <div style="color: #64748b; font-size: 10px; margin-top: 2px;">20 KM Radius origin point</div>
+            </div>
+          `,
+        })
+
+        hubMarker.addListener('click', () => {
+          hubInfoWindow.open(map, hubMarker)
+        })
+
+        // User Draggable Marker
+        const marker = new maps.Marker({
+          position: { lat: centerLat, lng: centerLng },
+          map,
+          draggable: true,
+          title: 'Your Location (Drag to adjust)',
+          icon: userPinIcon,
+          zIndex: 2,
+          visible: Boolean(currentLoc),
+        })
+        markerRef.current = marker
+
+        marker.addListener('dragend', e => {
+          reverseGeocode(e.latLng.lat(), e.latLng.lng())
+        })
+
+        map.addListener('click', e => {
+          reverseGeocode(e.latLng.lat(), e.latLng.lng())
+        })
+
+        // MutationObserver: Auto-dismiss and suppress Google error dialogs
+        const dismissObserver = new MutationObserver(() => {
+          const errModal = mapContainerRef.current?.querySelector('.gm-err-container')
+          if (errModal) {
+            errModal.remove()
+          }
+          const btn = mapContainerRef.current?.querySelector('.dismissButton')
+          if (btn) {
+            btn.click()
+          }
+        })
+        dismissObserver.observe(mapContainerRef.current, { childList: true, subtree: true })
+      })
+      .catch(err => {
+        if (!isMounted) return
+        setLoadError(err.message || 'Could not load map.')
+        setIsMapLoading(false)
       })
 
-      userMarkerRef.current = marker
-    }
-
-    // Click map to place pin
-    map.on('click', e => {
-      applyLocation(e.latlng.lat, e.latlng.lng)
-    })
-
-    mapInstanceRef.current = map
-
-    // Ensure map tiles resize correctly after mounting
-    const timer = setTimeout(() => {
-      map.invalidateSize()
-    }, 200)
-
     return () => {
-      clearTimeout(timer)
-      map.remove()
-      mapInstanceRef.current = null
-      userMarkerRef.current = null
+      isMounted = false
     }
-  }, [])
+  }, [handleLocationUpdate, reverseGeocode])
 
-  // Invalidate size if container becomes visible
+  // Real-time suggestions debouncer (runs only when user is actively typing)
   useEffect(() => {
-    if (mapInstanceRef.current) {
-      setTimeout(() => mapInstanceRef.current?.invalidateSize(), 150)
-    }
-  }, [])
-
-  // Instant local suggestions as user types
-  const handleInputChange = e => {
-    const val = e.target.value
-    setSearchQuery(val)
-    setGpsError(null)
-
-    if (!val.trim()) {
+    if (!isUserTypingRef.current || !showSuggestions || !searchQuery || searchQuery.trim().length < 2) {
       setSuggestions([])
       return
     }
 
-    const q = val.toLowerCase().trim()
-    const matches = SRI_LANKA_LOCATIONS.filter(
-      loc =>
-        loc.name.toLowerCase().includes(q) ||
-        loc.district.toLowerCase().includes(q)
-    ).slice(0, 5)
+    const timer = setTimeout(async () => {
+      setIsSearching(true)
+      const results = await searchSriLankaAddresses(searchQuery)
+      if (isUserTypingRef.current && showSuggestions) {
+        setSuggestions(results)
+      }
+      setIsSearching(false)
+    }, 220)
 
-    setSuggestions(matches)
-  }
+    return () => clearTimeout(timer)
+  }, [searchQuery, showSuggestions])
 
-  // User selects a suggestion from dropdown
-  const handleSelectSuggestion = loc => {
-    setSearchQuery(loc.name)
+  // Click outside listener to dismiss suggestions dropdown
+  useEffect(() => {
+    const handleClickOutside = e => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target)) {
+        setShowSuggestions(false)
+        setSuggestions([])
+        isUserTypingRef.current = false
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  // User selects an address suggestion from dropdown
+  const handleSelectSuggestion = item => {
+    isUserTypingRef.current = false
+    setShowSuggestions(false)
     setSuggestions([])
-    applyLocation(loc.lat, loc.lng, loc.name, loc.district)
+    setSearchQuery(item.name)
+    setStatusMessage(null)
+
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.panTo({ lat: item.lat, lng: item.lng })
+      mapInstanceRef.current.setZoom(15)
+    }
+
+    handleLocationUpdate(item.lat, item.lng, {
+      name: item.name,
+      address: item.secondary ? `${item.name}, ${item.secondary}` : item.name,
+      district: item.district,
+      province: item.province,
+      isWestern: item.isWestern,
+    })
   }
 
-  // Online Nominatim Search fallback when hitting enter
-  const handleSearchSubmit = async e => {
+  // Manual Geocode Search (Search Button / Enter Key)
+  const handleSearchSubmit = e => {
     if (e) e.preventDefault()
+    isUserTypingRef.current = false
+    setShowSuggestions(false)
+    setSuggestions([])
     if (!searchQuery.trim()) return
 
-    // Check if matching suggestion exists first
-    const q = searchQuery.toLowerCase().trim()
-    const directMatch = SRI_LANKA_LOCATIONS.find(loc => loc.name.toLowerCase().includes(q))
-    if (directMatch) {
-      handleSelectSuggestion(directMatch)
+    // If suggestions are open, select the first suggestion
+    if (suggestions.length > 0) {
+      handleSelectSuggestion(suggestions[0])
       return
     }
 
-    setIsSearchingOnline(true)
-    setGpsError(null)
-    setSuggestions([])
+    setIsSearching(true)
+    setStatusMessage(null)
 
-    try {
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-          searchQuery + ', Sri Lanka'
-        )}&countrycodes=lk&limit=1`
+    if (geocoderRef.current) {
+      geocoderRef.current.geocode(
+        {
+          address: searchQuery,
+          componentRestrictions: { country: 'lk' },
+        },
+        (results, status) => {
+          setIsSearching(false)
+          if (status === 'OK' && results && results[0]) {
+            const res = results[0]
+            const lat = res.geometry.location.lat()
+            const lng = res.geometry.location.lng()
+
+            if (mapInstanceRef.current) {
+              mapInstanceRef.current.panTo({ lat, lng })
+              mapInstanceRef.current.setZoom(15)
+            }
+
+            const parsed = parseAddressComponents(res.address_components, lat, lng, res.formatted_address)
+            handleLocationUpdate(lat, lng, parsed)
+          } else {
+            // Fallback online search
+            searchSriLankaAddresses(searchQuery).then(resList => {
+              if (resList.length > 0) {
+                handleSelectSuggestion(resList[0])
+              } else {
+                setStatusMessage('Address not found. Please select from the dropdown or click on the map.')
+              }
+            })
+          }
+        }
       )
-      const data = await res.json()
-      if (data && data.length > 0) {
-        const item = data[0]
-        const lat = parseFloat(item.lat)
-        const lng = parseFloat(item.lon)
-        const displayName = item.display_name.split(',')[0] || searchQuery
-        applyLocation(lat, lng, displayName)
-      } else {
-        setGpsError('Location not found. Click the map to drop your pin.')
-      }
-    } catch {
-      setGpsError('Could not reach search service. Please click on the map.')
-    } finally {
-      setIsSearchingOnline(false)
+    } else {
+      searchSriLankaAddresses(searchQuery).then(resList => {
+        setIsSearching(false)
+        if (resList.length > 0) {
+          handleSelectSuggestion(resList[0])
+        } else {
+          setStatusMessage('Address not found. Please click on the map to pin.')
+        }
+      })
     }
   }
 
-  // Browser Geolocation API ("Use My Location")
+  // Browser Geolocation ("Use GPS")
   const handleUseCurrentLocation = () => {
     if (!navigator.geolocation) {
-      setGpsError('Geolocation is not supported by your browser')
+      setStatusMessage('Geolocation is not supported by your browser')
       return
     }
 
     setIsLocatingGPS(true)
-    setGpsError(null)
+    setStatusMessage(null)
 
     navigator.geolocation.getCurrentPosition(
       pos => {
         setIsLocatingGPS(false)
         const lat = pos.coords.latitude
         const lng = pos.coords.longitude
-        applyLocation(lat, lng, 'My Current Location')
+
         if (mapInstanceRef.current) {
-          mapInstanceRef.current.setView([lat, lng], 13, { animate: true })
+          mapInstanceRef.current.panTo({ lat, lng })
+          mapInstanceRef.current.setZoom(15)
         }
+
+        reverseGeocode(lat, lng)
       },
       err => {
         setIsLocatingGPS(false)
         if (err.code === 1) {
-          setGpsError('Location permission denied. Please search or click on the map.')
+          setStatusMessage('Location permission denied. Please search your address above or click on the map.')
         } else {
-          setGpsError('Unable to detect location. Please search or click on the map.')
+          setStatusMessage('Unable to detect GPS position. Please type your address or click on the map.')
         }
       },
       { timeout: 10000, enableHighAccuracy: true }
@@ -464,19 +675,31 @@ export default function MapLocationPicker({
 
   return (
     <div className="space-y-3">
-      {/* ── SEARCH & GPS CONTROLS ── */}
-      <div className="relative">
+      {/* ── SEARCH & AUTOCOMPLETE BAR ── */}
+      <div ref={searchContainerRef} className="relative">
         <form onSubmit={handleSearchSubmit} className="flex gap-1.5">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
             <input
               type="text"
               value={searchQuery}
-              onChange={handleInputChange}
-              placeholder="Search town, suburb or address..."
-              className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30 bg-slate-50 placeholder-slate-400"
+              onChange={e => {
+                isUserTypingRef.current = true
+                setSearchQuery(e.target.value)
+                setShowSuggestions(true)
+                setStatusMessage(null)
+              }}
+              onKeyDown={e => {
+                if (e.key === 'Escape') {
+                  setShowSuggestions(false)
+                  setSuggestions([])
+                  isUserTypingRef.current = false
+                }
+              }}
+              placeholder="Search exact street address, town, or landmark..."
+              className="w-full pl-9 pr-9 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30 bg-white placeholder-slate-400 shadow-xs"
             />
-            {isSearchingOnline && (
+            {isSearching && (
               <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-sky-600 animate-spin" />
             )}
           </div>
@@ -497,26 +720,32 @@ export default function MapLocationPicker({
           </button>
         </form>
 
-        {/* Suggestions Dropdown */}
-        {suggestions.length > 0 && (
-          <div className="absolute z-20 left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden divide-y divide-slate-100">
-            {suggestions.map(s => {
-              const d = calculateDistanceKm(COLOMBO_HUB.lat, COLOMBO_HUB.lng, s.lat, s.lng)
+        {/* ── LIVE ADDRESS SUGGESTIONS DROPDOWN ── */}
+        {showSuggestions && suggestions.length > 0 && (
+          <div className="absolute z-50 left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden divide-y divide-slate-100 max-h-64 overflow-y-auto">
+            {suggestions.map((item, idx) => {
+              const d = calculateDistanceKm(COLOMBO_HUB.lat, COLOMBO_HUB.lng, item.lat, item.lng)
               return (
                 <button
-                  key={`${s.name}-${s.lat}`}
+                  key={`${item.name}-${item.lat}-${idx}`}
                   type="button"
-                  onClick={() => handleSelectSuggestion(s)}
-                  className="w-full px-3.5 py-2.5 text-left text-xs hover:bg-sky-50 flex items-center justify-between cursor-pointer transition-colors"
+                  onClick={() => handleSelectSuggestion(item)}
+                  className="w-full px-3.5 py-2.5 text-left text-xs hover:bg-sky-50/80 flex items-center justify-between gap-2 cursor-pointer transition-colors"
                 >
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-3.5 h-3.5 text-sky-600 shrink-0" />
-                    <div>
-                      <span className="font-bold text-slate-800">{s.name}</span>
-                      <span className="text-[11px] text-slate-400 ml-1.5">({s.district})</span>
+                  <div className="flex items-start gap-2.5 min-w-0">
+                    <MapPin className="w-4 h-4 text-sky-600 shrink-0 mt-0.5" />
+                    <div className="min-w-0">
+                      <div className="font-extrabold text-slate-900 truncate">{item.name}</div>
+                      <div className="text-[11px] text-slate-500 truncate">{item.secondary}</div>
                     </div>
                   </div>
-                  <span className="text-[11px] font-extrabold text-sky-700 shrink-0">
+                  <span
+                    className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full shrink-0 ${
+                      d <= 20
+                        ? 'bg-emerald-100 text-emerald-800'
+                        : 'bg-sky-100 text-sky-800'
+                    }`}
+                  >
                     {d} km · {d <= 20 ? 'Within 20 km' : 'Beyond 20 km'}
                   </span>
                 </button>
@@ -526,28 +755,44 @@ export default function MapLocationPicker({
         )}
       </div>
 
-      {gpsError && (
+      {statusMessage && (
         <div className="flex items-center gap-2 p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-800">
           <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
-          <span>{gpsError}</span>
+          <span>{statusMessage}</span>
         </div>
       )}
 
-      {/* ── INTERACTIVE LEAFLET MAP ── */}
-      <div className="relative rounded-2xl overflow-hidden border border-slate-200 shadow-xs">
+      {/* ── GOOGLE MAP CONTAINER ── */}
+      <div className="relative rounded-2xl overflow-hidden border border-slate-200 shadow-xs bg-slate-100">
         <div
           ref={mapContainerRef}
-          className="w-full h-44 sm:h-48 bg-slate-100 z-0"
-          style={{ minHeight: '175px' }}
+          className="w-full h-48 sm:h-52 z-0"
+          style={{ minHeight: '190px' }}
         />
+
+        {/* Loading Overlay */}
+        {isMapLoading && (
+          <div className="absolute inset-0 bg-slate-100/90 backdrop-blur-xs flex flex-col items-center justify-center gap-2 z-20">
+            <Loader2 className="w-7 h-7 text-sky-600 animate-spin" />
+            <span className="text-xs font-bold text-slate-600">Loading Map...</span>
+          </div>
+        )}
+
+        {/* Error Overlay */}
+        {loadError && (
+          <div className="absolute inset-0 bg-red-50/95 backdrop-blur-xs p-4 flex flex-col items-center justify-center text-center gap-2 z-20">
+            <AlertCircle className="w-7 h-7 text-red-500" />
+            <p className="text-xs font-bold text-red-800 max-w-sm">{loadError}</p>
+          </div>
+        )}
 
         {/* Map Legend Overlay */}
         <div className="absolute top-2 left-2 z-10 pointer-events-none flex flex-wrap gap-1">
-          <div className="px-2 py-0.5 rounded-md bg-white/90 backdrop-blur-xs border border-slate-200 text-[10px] font-bold text-slate-700 shadow-2xs flex items-center gap-1">
+          <div className="px-2 py-0.5 rounded-md bg-white/95 backdrop-blur-xs border border-slate-200 text-[10px] font-bold text-slate-700 shadow-xs flex items-center gap-1">
             <span className="w-2 h-2 rounded-full border border-sky-500 bg-sky-200" />
             <span>20 km Radius Zone</span>
           </div>
-          <div className="px-2 py-0.5 rounded-md bg-white/90 backdrop-blur-xs border border-slate-200 text-[10px] font-bold text-slate-700 shadow-2xs flex items-center gap-1">
+          <div className="px-2 py-0.5 rounded-md bg-white/95 backdrop-blur-xs border border-slate-200 text-[10px] font-bold text-slate-700 shadow-xs flex items-center gap-1">
             <span className="text-sky-600 font-black">★</span>
             <span>Kadawatha Hub</span>
           </div>
@@ -555,10 +800,10 @@ export default function MapLocationPicker({
 
         {/* Hint banner */}
         <div className="absolute bottom-1.5 left-2 right-2 z-10 pointer-events-none text-center">
-          <span className="inline-block px-2.5 py-0.5 rounded-full bg-slate-900/75 text-white text-[10px] font-semibold backdrop-blur-xs shadow-xs">
+          <span className="inline-block px-2.5 py-0.5 rounded-full bg-slate-900/80 text-white text-[10px] font-semibold backdrop-blur-xs shadow-xs">
             {currentLoc
-              ? '💡 Drag pin or click map to adjust your exact location'
-              : '📍 Search your town above or click on the map to pin your location'}
+              ? '💡 Drag pin or tap anywhere on the map to adjust exact spot'
+              : '📍 Search address above, use GPS, or tap map to drop your pin'}
           </span>
         </div>
       </div>
@@ -571,16 +816,16 @@ export default function MapLocationPicker({
             <span>Please Select Your Location</span>
           </div>
           <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
-            Search your town or suburb above, tap on the map, or click <span className="font-bold text-sky-700">"Use GPS"</span> to detect your service distance.
+            Search your street address, town, or tap the map to calculate service distance &amp; rates.
           </p>
         </div>
       ) : (
         <div className="rounded-2xl border-2 border-sky-400/50 bg-gradient-to-br from-sky-50 via-white to-emerald-50/50 p-3.5 shadow-sm space-y-2.5">
           <div className="flex items-start justify-between gap-2">
-            <div className="space-y-0.5">
+            <div className="space-y-0.5 min-w-0">
               <div className="flex items-center gap-1.5 text-xs font-black text-slate-900">
                 <MapPin className="w-4 h-4 text-sky-600 shrink-0" />
-                <span>{currentLoc.name}</span>
+                <span className="truncate">{currentLoc.address || currentLoc.name}</span>
               </div>
               <p className="text-[11px] text-slate-500 pl-5">
                 District: <span className="font-bold text-slate-700">{currentLoc.district}</span>
